@@ -1,9 +1,8 @@
 import json
 import os
-import uuid
 import base64
 import re
-class userDB():
+class UserDB():
     def create(tablename, colName, colType, rowid, data):
         path = ('db/' + tablename + '/' + colName)
         os.makedirs(path, exist_ok=True)
@@ -13,7 +12,7 @@ class userDB():
         with open(path +'/'+ filename + '_' + data) as f:
             f.write(str(data))
         return rowid
-        
+
     def find(tablename, colName, data):
         results = []
         data = (data.encode('utf-8'))
@@ -37,17 +36,14 @@ class userDB():
                     data = str(data)[2:-1]
                     return data     
 
-    def update(tablename, colName, colType, rowid, data):
+    def update(tablename, colName, colType, rowid, data, colType2, rowid2, data2, userinput):
         path = ('db/' + tablename + '/' + colName)
-        os.chdir(path)
-        data = (data.encode('utf-8'))
-        data = base64.b64encode(data)
         oldFileName = str(colType) + '_' + str(rowid) + '_' + str(data)
-        newFileName = str(colType) + '_' + str(rowid) + '_' + str(data)
-        
-        #os.rename(oldName, newName)
-
-
-        
-
-
+        newFileName = str(colType2) + '_' + str(rowid2) + '_' + str(data2)
+        for root, dirs, files in os.walk(path):
+            for file in files:
+                if userinput == oldFileName:
+                    os.rename(oldFileName, newFileName)
+                    return True
+                else:
+                    return False
