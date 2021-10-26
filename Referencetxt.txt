@@ -5,3 +5,4 @@ https://www.geeksforgeeks.org/python-os-makedirs-method/
 https://www.youtube.com/watch?v=9N6a-VLBa2I
 https://www.geeksforgeeks.org/os-module-python-examples/
 https://www.tutorialspoint.com/python/python_reg_expressions.htm
+https://pynative.com/python-rename-file/
