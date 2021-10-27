@@ -6,3 +6,9 @@ https://www.youtube.com/watch?v=9N6a-VLBa2I
 https://www.geeksforgeeks.org/os-module-python-examples/
 https://www.tutorialspoint.com/python/python_reg_expressions.htm
 https://pynative.com/python-rename-file/
+https://www.javatpoint.com/python-string-isnumeric-method#:~:text=Python%20isnumeric()%20method%20checks,the%20Unicode%20numeric%20value%20property.
+https://www.w3schools.com/python/python_for_loops.asp
+https://stackoverflow.com/questions/15604267/return-true-false-and-none-in-python
+https://www.askpython.com/python/string/python-string-split-function
+https://www.w3schools.com/python/gloss_python_elif.asp
+https://www.w3schools.com/python/python_lists_methods.asp

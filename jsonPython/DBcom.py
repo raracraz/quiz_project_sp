@@ -27,6 +27,18 @@ class UserDB():
                     results.append(file.split('_')[0])
         return results
 
+    def find_rowid(tablename, colName, rowid):
+        results = []
+        regex = re.compile(rowid)
+        path = ('db/' + tablename + '/' + colName)
+        for root, dirs, files in os.walk(path):
+            for file in files:
+                file_data = file.split('_')[0]
+                if bool(re.match(regex, file_data)):
+                    print('>', file_data, '[',rowid,']')
+                    results.append(file.split('_')[0])
+        return results
+
     def read(tablename, colName, rowid):
         path = ('db/' + tablename + '/' + colName)
         for root, dirs, files in os.walk(path):
@@ -47,3 +59,15 @@ class UserDB():
                     return True
                 else:
                     return False
+
+    def delete(tablename, colName, colType, rowid, data):
+        path = ('db/' + tablename + '/' + colName)
+        filename = str(colType) + '_' + str(rowid) + '_' + str(data)
+        if os.path.exists(path + '/' + filename):
+            os.remove(path + '/' + filename)
+            return True
+        else:
+            print('The file does not exist')
+            return False
+
+        
