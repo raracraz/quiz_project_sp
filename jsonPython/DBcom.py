@@ -18,7 +18,6 @@ class UserDB():
         data = (data.encode('utf-8'))
         data = str(base64.b64encode(data))[2:-3]
         regex = re.compile(data)
-
         for root, dirs, files in os.walk('db/'+ tablename+'/'+ colName):
             for file in files:
                 file_data = file.split('_')[2]
@@ -56,8 +55,10 @@ class UserDB():
             for file in files:
                 if userinput == oldFileName:
                     os.rename(oldFileName, newFileName)
+                    print('Successfully updated' + oldFileName + ' to ' + newFileName)
                     return True
                 else:
+                    print('Error, could not update file...')
                     return False
 
     def delete(tablename, colName, colType, rowid, data):
@@ -65,9 +66,10 @@ class UserDB():
         filename = str(colType) + '_' + str(rowid) + '_' + str(data)
         if os.path.exists(path + '/' + filename):
             os.remove(path + '/' + filename)
+            print('Deleted' + path + '/' + filename)
             return True
         else:
-            print('The file does not exist')
+            print('This file does not exist...')
             return False
 
         

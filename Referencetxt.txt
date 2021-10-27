@@ -12,3 +12,4 @@ https://stackoverflow.com/questions/15604267/return-true-false-and-none-in-pytho
 https://www.askpython.com/python/string/python-string-split-function
 https://www.w3schools.com/python/gloss_python_elif.asp
 https://www.w3schools.com/python/python_lists_methods.asp
+https://www.w3schools.com/python/python_file_remove.asp
