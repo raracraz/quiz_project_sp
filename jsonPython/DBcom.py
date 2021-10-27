@@ -47,3 +47,7 @@ class UserDB():
                     return True
                 else:
                     return False
+
+    def delete(tablename, colName, colType, rowid, data):
+        path = ('db/' + tablename + '/' + colName)
+        
