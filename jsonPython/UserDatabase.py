@@ -1,13 +1,24 @@
-import json
-import DBcommands
 import os
-#User data has id, email, password and accesslevel.
-def current_path():
-    print("Current working directory")
-    print(os.getcwd())
-    print()
-current_path()
+import DBcom
+import uuid
+rowid = hash(uuid.uuid4())
+#username = str(input('Please enter your username: '))
+def registerUser(rowid, username):
+    
+    DBcom.UserDB.create('users', 'username', 's', rowid, username)
 
-os.makedirs('quiz_app/db/users/password')
-     
-current_path()
+    #password = str(input('Please enter your password: '))
+    
+    
+
+
+def switch_demo(argument):
+    switcher = {
+        1: "Login",
+        2: "Register",
+        3: "Forget password",
+    }
+    print (switcher.get(argument, "Invalid Option"))
+
+
+DBcom.UserDB.create('users', 'username', 's', rowid, 'rYAnnnn')
