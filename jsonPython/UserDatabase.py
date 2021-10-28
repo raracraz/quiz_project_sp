@@ -2,7 +2,7 @@ import os
 import DBcom
 import uuid
 rowid = hash(uuid.uuid4())
-#username = str(input('Please enter your username: '))
+username = str(input('Please enter your username: '))
 def registerUser(rowid, username):
     
     DBcom.UserDB.create('users', 'username', 's', rowid, username)
@@ -21,4 +21,3 @@ def switch_demo(argument):
     print (switcher.get(argument, "Invalid Option"))
 
 
-DBcom.UserDB.create('users', 'username', 's', rowid, 'rYAnnnn')
