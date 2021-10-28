@@ -4,7 +4,7 @@ import base64 #ensures that each character is supported by the file system
 import re #use to manipulate strings
 class UserDB():
     def create(tableName, colName, colType, rowid, data):
-        path = ('./db/' + tableName + '/' + colName)
+        path = ('jsonPython/db/' + tableName + '/' + colName)
         
         os.makedirs(path, exist_ok=True)
         data = (data.encode('utf-8'))
