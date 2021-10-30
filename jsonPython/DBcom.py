@@ -5,7 +5,6 @@ import re #use to manipulate strings
 class UserDB():
     def create(tableName, colName, colType, rowid, data):
         path = ('jsonPython/db/' + tableName + '/' + colName)
-        
         os.makedirs(path, exist_ok=True)
         data = (data.encode('utf-8'))
         data = base64.b64encode(data)
@@ -30,7 +29,7 @@ class UserDB():
     def find_rowid(tableName, colName, rowid):
         results = []
         regex = re.compile(rowid)
-        path = ('db/' + tableName + '/' + colName)
+        path = ('jsonPython/db/' + tableName + '/' + colName)
         for root, dirs, files in os.walk(path):
             for file in files:
                 file_data = file.split('_')[0]
@@ -40,7 +39,7 @@ class UserDB():
         return results
 
     def read(tableName, colName, rowid):
-        path = ('db/' + tableName + '/' + colName)
+        path = ('jsonPython/db/' + tableName + '/' + colName)
         for root, dirs, files in os.walk(path):
             for file in files:
                 if file.split('_')[0] == str(rowid):
@@ -49,7 +48,7 @@ class UserDB():
                     return data     
 
     def update(tableName, colName, colType, rowid, data, colType2, rowid2, data2, userinput):
-        path = ('db/' + tableName + '/' + colName)
+        path = ('jsonPython/db/' + tableName + '/' + colName)
         oldFileName = str(colType) + '_' + str(rowid) + '_' + str(data)
         newFileName = str(colType2) + '_' + str(rowid2) + '_' + str(data2)
         for root, dirs, files in os.walk(path):
@@ -63,7 +62,7 @@ class UserDB():
                     return False
 
     def delete(tableName, colName, colType, rowid, data):
-        path = ('db/' + tableName + '/' + colName)
+        path = ('jsonPython/db/' + tableName + '/' + colName)
         filename = str(colType) + '_' + str(rowid) + '_' + str(data)
         if os.path.exists(path + '/' + filename):
             os.remove(path + '/' + filename)
