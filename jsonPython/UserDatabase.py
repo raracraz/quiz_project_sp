@@ -9,9 +9,6 @@ def registerUser(rowid, username):
 
     #password = str(input('Please enter your password: '))
     
-    
-
-
 def switch_demo(argument):
     switcher = {
         1: "Login",
