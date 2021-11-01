@@ -20,13 +20,13 @@ def registerUser(rowid):
 
     #password = str(input('Please enter your password: '))
     
-def switch_demo(menu):
-    menu = input('Please choose a Option')
-    switcher = {
-        1: "Login",
-        2: "Register",
-        3: "Forget password",
-    }
-    print (switcher.get(menu, "Invalid Option"))
+    #def switch_demo():
+    #    menu = int(input('Please choose a Option: '))
+    #    switcher = {
+    #        1: "Login",
+    #        2: "Register",
+    #        3: "Forget password",
+    #    }
+    #    print (switcher.get(menu, "Invalid Option" ))
 
-registerUser(rowid)
+    
