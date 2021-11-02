@@ -9,7 +9,6 @@
 # update - update data in table/column/rowid returns true/false
 # delete - delete data from table/column/rowid returns true/false
 
-import json
 import os #navigate file system
 import base64 #ensures that each character is supported by the file system
 import re #use to manipulate strings
@@ -46,7 +45,7 @@ class UserDB():
                 file_data = file.split('_')[0]
                 if bool(re.match(regex, file_data)):
                     print('>', file_data, '[',rowid,']')
-                    results.append(file.split('_')[0])
+                    results = results.append(file.split('_')[0])
         return results
 
     def read(tableName, colName, rowid):

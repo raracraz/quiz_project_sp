@@ -15,9 +15,12 @@ def menu(rowid):
         choice = int(input('Please enter your choice: '))
     except ValueError:
         print('Please enter a valid choice')
-        (rowid)
+        menu(rowid)
     if choice == 1:
-        login(rowid)
+        data = ''
+        data = (data.encode('utf-8'))
+        data = base64.b64encode(data) 
+        login(rowid, data)
     elif choice == 2:
         registerUser(rowid)
     elif choice == 3:
@@ -50,30 +53,37 @@ def registerUser(rowid):
     #password = str(input('Please enter your password: '))
 
 #function to login using DBcom find function with data
-def login(rowid):
-    
-    try:
-        colType = str(input('Please enter your username: '))
-    except ValueError:
-        print('Please enter a valid username')
-        login(rowid)
-    try:
-        data = str(input('Please enter your password: '))
-    except ValueError:
-        print('Please enter a valid password')
-        login(rowid)
+def login(rowid, data):
+    results = []
+    colType = 's'
+    DBcom.UserDB.find_rowid('users', 'username', rowid)
+    if DBcom.UserDB.find_rowid('users', 'username', rowid) == True:
+        
+        try:
+            data = str(input('Please enter your username: '))
+        except ValueError:
+            print('Please enter a valid username')
+            login(rowid, data)
+        try:
+            data = str(input('Please enter your password: '))
+        except ValueError:
+            print('Please enter a valid password')
+            login(rowid, data)
 
-    filename = str(rowid) + '_' + str(colType) + '_' + str(data)[2:-1]
-    if DBcom.UserDB.find('users', 'username', filename) == True:
-        if DBcom.UserDB.find('users', 'password', filename) == True:
-            print('Login successful')
-            #function to take quiz
+        filename = str(results) + '_' + str(colType) + '_' + str(data)[2:-1]
+        if DBcom.UserDB.find('users', 'username', filename) == True:
+            if DBcom.UserDB.find('users', 'password', filename) == True:
+                print('Login successful')
+                #function to take quiz
+            else:
+                print('Incorrect password')
+                login(rowid, data)
         else:
-            print('Incorrect password')
-            login(rowid)
+            print('Incorrect username')
+            login(rowid, data)
     else:
         print('Incorrect username')
-        login(rowid)
+        login(rowid, data)
 
 #function to forget password using DBcom find function
 
