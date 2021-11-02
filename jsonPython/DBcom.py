@@ -1,3 +1,14 @@
+# Use file system to store rows of data.
+# Provides high concurrency and low latency only limited by the file system.
+# does not have read/write locks.
+#
+# usage:
+# create - create a new table with a column and row data returns unquie rowid
+# find - find a matching data in table/column returns rowid
+# read - read data from table/column/rowid returns data
+# update - update data in table/column/rowid returns true/false
+# delete - delete data from table/column/rowid returns true/false
+
 import json
 import os #navigate file system
 import base64 #ensures that each character is supported by the file system
@@ -46,7 +57,7 @@ class UserDB():
                     data = base64.b64encode(file.split('_')[2])
                     data = str(data)[2:-1]
                     return data     
-
+    
     def update(tableName, colName, colType, rowid, data, colType2, rowid2, data2, userinput):
         path = ('jsonPython/db/' + tableName + '/' + colName)
         oldFileName = str(colType) + '_' + str(rowid) + '_' + str(data)
@@ -61,15 +72,27 @@ class UserDB():
                     print('Error, could not update file...')
                     return False
 
-    def delete(tableName, colName, colType, rowid, data):
+    def delete(tableName, colName, rowid):
         path = ('jsonPython/db/' + tableName + '/' + colName)
-        filename = str(colType) + '_' + str(rowid) + '_' + str(data)
-        if os.path.exists(path + '/' + filename):
-            os.remove(path + '/' + filename)
-            print('Deleted' + path + '/' + filename)
-            return True
-        else:
-            print('This file does not exist...')
-            return False
+        for root, dirs, files in os.walk(path):
+            for file in files:
+                if file.split('_')[0] == str(rowid):
+                    os.remove(file)
+                    print('Successfully deleted ' + file)
+                    return True
+                else:
+                    print('Error, could not delete file...')
+                    return False
+
+    #def delete(tableName, colName, colType, rowid, data):
+     #   path = ('jsonPython/db/' + tableName + '/' + colName)
+      #  filename = str(colType) + '_' + str(rowid) + '_' + str(data)
+       # if os.path.exists(path + '/' + filename):
+        #    os.remove(path + '/' + filename)
+         #   print('Deleted' + path + '/' + filename)
+          #  return True
+        #else:
+         #   print('This file does not exist...')
+          #  return False
 
         
