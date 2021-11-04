@@ -28,13 +28,14 @@ class UserDB():
         data = (data.encode('utf-8'))
         data = str(base64.b64encode(data))[2:-3]
         regex = re.compile(data)
-        for root, dirs, files in os.walk('db/'+ tableName+'/'+ colName):
+        for root, dirs, files in os.walk('jsonPython/db/'+ tableName+'/'+ colName):
             for file in files:
                 file_data = file.split('_')[2]
                 if bool(re.match(regex, file_data)):
-                    print('>', file_data,'[',data,']')
+                    #print('>', file_data,'[',data,']')
                     results.append(file.split('_')[0])
-        return results
+                    return True
+        return False
 
     def find_rowid(tableName, colName, rowid):
         results = []
@@ -46,7 +47,8 @@ class UserDB():
                 if bool(re.match(regex, file_data)):
                     print('>', file_data, '[',rowid,']')
                     results = results.append(file.split('_')[0])
-        return results
+                    return True
+        return False
 
     def read(tableName, colName, rowid):
         path = ('jsonPython/db/' + tableName + '/' + colName)
