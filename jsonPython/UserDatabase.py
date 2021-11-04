@@ -8,7 +8,7 @@ import base64
 #let the user choose to login, register, forget password and exit
 def menu():
     rowid = hash(uuid.uuid4())
-    print('\nWelcome to the The quiz')
+    print('\n**Welcome to the The quiz**')
     print('1. Login')
     print('2. Register')
     print('3. Forget password')
@@ -18,6 +18,9 @@ def menu():
     except ValueError:
         print('Please enter a valid choice')
         menu()
+    except KeyboardInterrupt:
+        print('\nGoodbye...')
+        exit()
     if choice == 1:
         dataUser = ''
         dataPass = ''
@@ -41,11 +44,17 @@ def registerUser(rowid):
     except ValueError:
         print('Please enter a valid username')
         registerUser(rowid, acl)
+    except KeyboardInterrupt:
+        print('\nGoodbye...')
+        exit()
     try:
         password = str(input('Please enter your password: '))
     except ValueError:
         print('Please enter a valid password')
         registerUser(rowid, acl)
+    except KeyboardInterrupt:
+        print('\nGoodbye...')
+        exit()
     DBcom.UserDB.create('users', 'acl', 's', rowid, acl)
     DBcom.UserDB.create('users', 'username', 's', rowid, username)
     DBcom.UserDB.create('users', 'password', 's', rowid, password)
@@ -76,10 +85,14 @@ def login(dataUser, dataPass):
     except KeyboardInterrupt:
         print('\nGoodbye...')
         exit()
+    #if there is no password entered.
+    if dataPass == '':
+        print('Please enter a valid password')
+        login(dataUser, dataPass)
     if DBcom.UserDB.find('users', 'username', dataUser) == True:
         if DBcom.UserDB.find('users', 'password', dataPass) == True:
             print('\nLogin successful')
-            menu()
+            menu() #change to the take the quiz function
         else:
             print('Incorrect password')
             login(dataUser, dataPass)
