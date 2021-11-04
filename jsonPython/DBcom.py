@@ -1,7 +1,6 @@
 # Use file system to store rows of data.
 # Provides high concurrency and low latency only limited by the file system.
 # does not have read/write locks.
-#
 # usage:
 # create - create a new table with a column and row data returns unquie rowid
 # find - find a matching data in table/column returns rowid
@@ -74,6 +73,28 @@ class UserDB():
                     return False
 
     def delete(tableName, colName, rowid):
+        path = ('jsonPython/db/' + tableName + '/' + colName + '/' + rowid)
+        if os.path.exists(path):
+            os.rmdir(path)
+            print('Deleted' + path + 'successfully')
+            return True
+        else:
+            print('This table does not exist...')
+            return False
+'''
+    def delete(tableName, colName, colType, rowid, data):
+        path = ('jsonPython/db/' + tableName + '/' + colName)
+        filename = str(colType) + '_' + str(rowid) + '_' + str(data)
+        if os.path.exists(path + '/' + filename):
+            os.remove(path + '/' + filename)
+            print('Deleted' + path + '/' + filename)
+            return True
+        else:
+            print('This file does not exist...')
+            return False
+'''
+'''
+    def delete(tableName, colName, rowid):
         path = ('jsonPython/db/' + tableName + '/' + colName)
         for root, dirs, files in os.walk(path):
             for file in files:
@@ -84,16 +105,5 @@ class UserDB():
                 else:
                     print('Error, could not delete file...')
                     return False
-
-    #def delete(tableName, colName, colType, rowid, data):
-     #   path = ('jsonPython/db/' + tableName + '/' + colName)
-      #  filename = str(colType) + '_' + str(rowid) + '_' + str(data)
-       # if os.path.exists(path + '/' + filename):
-        #    os.remove(path + '/' + filename)
-         #   print('Deleted' + path + '/' + filename)
-          #  return True
-        #else:
-         #   print('This file does not exist...')
-          #  return False
-
+'''
         
