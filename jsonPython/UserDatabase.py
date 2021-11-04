@@ -3,10 +3,11 @@ import DBcom
 import uuid
 import re
 import base64
-rowid = hash(uuid.uuid4())
+
 # function to show the main menu for the quiz app 
-def menu(rowid):
-    print('Welcome to the The quiz')
+def menu():
+    rowid = hash(uuid.uuid4())
+    print('\nWelcome to the The quiz')
     print('1. Login')
     print('2. Register')
     print('3. Forget password')
@@ -15,7 +16,7 @@ def menu(rowid):
         choice = int(input('Please enter your choice: '))
     except ValueError:
         print('Please enter a valid choice')
-        menu(rowid)
+        menu()
     if choice == 1:
         data = ''
         data = (data.encode('utf-8'))
@@ -29,9 +30,9 @@ def menu(rowid):
         exit()
     else:
         print('Please enter a valid choice')
-        menu(rowid)
+        menu()
 
-    menu(rowid)
+    menu()
 
 def registerUser(rowid):
     acl = '0000'
@@ -53,37 +54,39 @@ def registerUser(rowid):
     #password = str(input('Please enter your password: '))
 
 #function to login using DBcom find function with data
-def login(rowid, data):
-    results = []
-    colType = 's'
-    DBcom.UserDB.find_rowid('users', 'username', rowid)
-    if DBcom.UserDB.find_rowid('users', 'username', rowid) == True:
-        
-        try:
-            data = str(input('Please enter your username: '))
-        except ValueError:
-            print('Please enter a valid username')
-            login(rowid, data)
-        try:
-            data = str(input('Please enter your password: '))
-        except ValueError:
-            print('Please enter a valid password')
-            login(rowid, data)
+def login(dataUser, dataPass):
+    try:
+        dataUser = str(input('Please enter your username: '))
+    except ValueError:
+        print('Please enter a valid username')
+        login(dataUser)
+    except KeyboardInterrupt:
+        print('\nGoodbye...')
+        exit()
+    #if there is no username entered.
+    if dataUser =='':
+        print('Please enter a valid username')
+        login(dataUser)
 
-        filename = str(results) + '_' + str(colType) + '_' + str(data)[2:-1]
-        if DBcom.UserDB.find('users', 'username', filename) == True:
-            if DBcom.UserDB.find('users', 'password', filename) == True:
-                print('Login successful')
-                #function to take quiz
-            else:
-                print('Incorrect password')
-                login(rowid, data)
+    try:
+        dataPass = str(input('Please enter your password: '))
+    except ValueError:
+        print('Please enter a valid password')
+        login(dataUser, dataPass)
+    except KeyboardInterrupt:
+        print('\nGoodbye...')
+        exit()
+    if DBcom.UserDB.find('users', 'username', dataUser) == True:
+        if DBcom.UserDB.find('users', 'password', dataPass) == True:
+            print('Login successful')
+            menu()
         else:
-            print('Incorrect username')
-            login(rowid, data)
+            print('Incorrect password')
+            login(dataUser, dataPass)
     else:
         print('Incorrect username')
-        login(rowid, data)
+        login(dataUser, dataPass)
+   
 
 #function to forget password using DBcom find function
 
@@ -95,7 +98,7 @@ def forgetPassword(rowid):
         forgetPassword(rowid)
     if DBcom.UserDB.find('users', 'username', 's', username) == True:
         print('Your password is: ' + DBcom.UserDB.find('users', 'password', 's', username))
-        menu(rowid)
+        menu()
     else:
         print('Incorrect username')
         forgetPassword(rowid)
@@ -103,6 +106,6 @@ def forgetPassword(rowid):
 
 
 
-menu(rowid)
+menu()
 
 
