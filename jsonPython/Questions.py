@@ -132,16 +132,8 @@ def main():
         file_name = input("Enter the file name of the question pool: ")
         questions = read_questions(file_name)
     #ask user to enter a question
-    while True:
-        question = input("Enter a question: ")
-        if question == "":
-            break
-        #ask user to enter the options for the question
-        options = input("Enter the options for the question (A, B, C, D): ")
-        #ask user to enter the correct answer for the question
-        answer = input("Enter the correct answer: ")
-        #create a unique id for the question
-        id = str(uuid.uuid4())
-        #create a question with the unique id, question, options, and answer
+    else:
+        print("Please enter 1 or 2")
+        main()
     
 replace_question_pool()
