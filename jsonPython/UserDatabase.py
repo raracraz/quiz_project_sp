@@ -5,6 +5,7 @@ import re
 import base64
 
 # function to show the main menu for the quiz app 
+#let the user choose to login, register, forget password and exit
 def menu():
     rowid = hash(uuid.uuid4())
     print('\nWelcome to the The quiz')
@@ -18,10 +19,9 @@ def menu():
         print('Please enter a valid choice')
         menu()
     if choice == 1:
-        data = ''
-        data = (data.encode('utf-8'))
-        data = base64.b64encode(data) 
-        login(rowid, data)
+        dataUser = ''
+        dataPass = ''
+        login(dataUser, dataPass)
     elif choice == 2:
         registerUser(rowid)
     elif choice == 3:
@@ -56,6 +56,7 @@ def registerUser(rowid):
 #function to login using DBcom find function with data
 def login(dataUser, dataPass):
     try:
+        print('**WARNING: Case Sensitive**')
         dataUser = str(input('Please enter your username: '))
     except ValueError:
         print('Please enter a valid username')
@@ -67,7 +68,6 @@ def login(dataUser, dataPass):
     if dataUser =='':
         print('Please enter a valid username')
         login(dataUser)
-
     try:
         dataPass = str(input('Please enter your password: '))
     except ValueError:
@@ -78,7 +78,7 @@ def login(dataUser, dataPass):
         exit()
     if DBcom.UserDB.find('users', 'username', dataUser) == True:
         if DBcom.UserDB.find('users', 'password', dataPass) == True:
-            print('Login successful')
+            print('\nLogin successful')
             menu()
         else:
             print('Incorrect password')
@@ -92,6 +92,7 @@ def login(dataUser, dataPass):
 
 def forgetPassword(rowid):
     try:
+        print('**WARNING: Case Sensitive**')
         username = str(input('Please enter your username: '))
     except ValueError:
         print('Please enter a valid username')
@@ -102,7 +103,6 @@ def forgetPassword(rowid):
     else:
         print('Incorrect username')
         forgetPassword(rowid)
-#let the user choose to login, register or forget password
 
 
 
