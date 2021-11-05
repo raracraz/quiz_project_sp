@@ -71,7 +71,7 @@ class UserDB():
                 else:
                     print('Error, could not update file...')
                     return False
-
+                    
     def delete(tableName, colName, rowid):
         path = ('jsonPython/db/' + tableName + '/' + colName + '/' + rowid)
         if os.path.exists(path):
