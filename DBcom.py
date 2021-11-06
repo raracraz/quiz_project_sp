@@ -13,7 +13,7 @@ import base64 #ensures that each character is supported by the file system
 import re #use to manipulate strings
 class UserDB():
     def create(tableName, colName, colType, rowid, data):
-        path = ('jsonPython/db/' + tableName + '/' + colName)
+        path = (tableName + '/' + colName)
         os.makedirs(path, exist_ok=True)
         data = (data.encode('utf-8'))
         data = base64.b64encode(data)
@@ -27,7 +27,7 @@ class UserDB():
         data = (data.encode('utf-8'))
         data = str(base64.b64encode(data))[2:-3]
         regex = re.compile(data)
-        for root, dirs, files in os.walk('jsonPython/db/'+ tableName+'/'+ colName):
+        for root, dirs, files in os.walk(tableName+'/'+ colName):
             for file in files:
                 file_data = file.split('_')[2]
                 if bool(re.match(regex, file_data)):
@@ -39,7 +39,7 @@ class UserDB():
     def find_rowid(tableName, colName, rowid):
         results = []
         regex = re.compile(rowid)
-        path = ('jsonPython/db/' + tableName + '/' + colName)
+        path = (tableName + '/' + colName)
         for root, dirs, files in os.walk(path):
             for file in files:
                 file_data = file.split('_')[0]
@@ -50,7 +50,7 @@ class UserDB():
         return False
 
     def read(tableName, colName, rowid):
-        path = ('jsonPython/db/' + tableName + '/' + colName)
+        path = (tableName + '/' + colName)
         for root, dirs, files in os.walk(path):
             for file in files:
                 if file.split('_')[0] == str(rowid):
@@ -59,7 +59,7 @@ class UserDB():
                     return data     
     
     def update(tableName, colName, colType, rowid, data, colType2, rowid2, data2, userinput):
-        path = ('jsonPython/db/' + tableName + '/' + colName)
+        path = (tableName + '/' + colName)
         oldFileName = str(colType) + '_' + str(rowid) + '_' + str(data)
         newFileName = str(colType2) + '_' + str(rowid2) + '_' + str(data2)
         for root, dirs, files in os.walk(path):
@@ -71,9 +71,9 @@ class UserDB():
                 else:
                     print('Error, could not update file...')
                     return False
-
+                    
     def delete(tableName, colName, rowid):
-        path = ('jsonPython/db/' + tableName + '/' + colName + '/' + rowid)
+        path = (tableName + '/' + colName + '/' + rowid)
         if os.path.exists(path):
             os.rmdir(path)
             print('Deleted' + path + 'successfully')
@@ -83,7 +83,7 @@ class UserDB():
             return False
 '''
     def delete(tableName, colName, colType, rowid, data):
-        path = ('jsonPython/db/' + tableName + '/' + colName)
+        path = ( tableName + '/' + colName)
         filename = str(colType) + '_' + str(rowid) + '_' + str(data)
         if os.path.exists(path + '/' + filename):
             os.remove(path + '/' + filename)
@@ -95,7 +95,7 @@ class UserDB():
 '''
 '''
     def delete(tableName, colName, rowid):
-        path = ('jsonPython/db/' + tableName + '/' + colName)
+        path = ( tableName + '/' + colName)
         for root, dirs, files in os.walk(path):
             for file in files:
                 if file.split('_')[0] == str(rowid):
