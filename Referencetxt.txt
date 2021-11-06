@@ -13,3 +13,10 @@ https://www.askpython.com/python/string/python-string-split-function
 https://www.w3schools.com/python/gloss_python_elif.asp
 https://www.w3schools.com/python/python_lists_methods.asp
 https://www.w3schools.com/python/python_file_remove.asp
+https://www.geeksforgeeks.org/convert-json-to-dictionary-in-python/
+https://www.freecodecamp.org/news/python-read-json-file-how-to-load-json-from-a-file-and-parse-dumps/
+https://www.codegrepper.com/code-examples/python/python+read+json+file+to+dict
+https://www.geeksforgeeks.org/python-convert-string-dictionary-to-dictionary/
+https://www.edureka.co/blog/python-list-length/
+https://stackoverflow.com/questions/13949637/how-to-update-json-file-with-python
+
