@@ -1,5 +1,5 @@
 import os
-import DBcom
+import stdLib
 import uuid
 import re
 import base64
@@ -55,9 +55,9 @@ def registerUser(rowid):
     except KeyboardInterrupt:
         print('\nGoodbye...')
         exit()
-    DBcom.UserDB.create('users', 'acl', 's', rowid, acl)
-    DBcom.UserDB.create('users', 'username', 's', rowid, username)
-    DBcom.UserDB.create('users', 'password', 's', rowid, password)
+    stdLib.UserDB.create('users', 'acl', 's', rowid, acl)
+    stdLib.UserDB.create('users', 'username', 's', rowid, username)
+    stdLib.UserDB.create('users', 'password', 's', rowid, password)
     print('Registration successful, return to the menu to login!')
 
     #password = str(input('Please enter your password: '))
@@ -89,10 +89,10 @@ def login(dataUser, dataPass):
     if dataPass == '':
         print('Please enter a valid password')
         login(dataUser, dataPass)
-    if DBcom.UserDB.find('users', 'username', dataUser) == True:
-        if DBcom.UserDB.find('users', 'password', dataPass) == True:
+    if stdLib.UserDB.find('users', 'username', dataUser) == True:
+        if stdLib.UserDB.find('users', 'password', dataPass) == True:
             print('\nLogin successful')
-            menu() #change to the take the quiz function
+            stdLib.main() #change to the take the quiz function
         else:
             print('Incorrect password')
             login(dataUser, dataPass)
@@ -110,8 +110,8 @@ def forgetPassword(rowid):
     except ValueError:
         print('Please enter a valid username')
         forgetPassword(rowid)
-    if DBcom.UserDB.find('users', 'username', 's', username) == True:
-        print('Your password is: ' + DBcom.UserDB.find('users', 'password', 's', username))
+    if stdLib.UserDB.find('users', 'username', 's', username) == True:
+        print('Your password is: ' + stdLib.UserDB.find('users', 'password', 's', username))
         menu()
     else:
         print('Incorrect username')
