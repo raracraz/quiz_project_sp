@@ -65,8 +65,8 @@ def replace_question_pool():
         replace_question_pool()
     
     #ask user to enter questions to replace the question pool
-    def replaceQnCheckpoint():
-        while len(questionList) < num_questions:
+    def replaceQnCheckpoint(num_questions):
+        while len(questionList) <= num_questions:
             question = input("Enter a question: ")
             if question == "":
                 print("question cannot be empty")
@@ -97,9 +97,10 @@ def replace_question_pool():
                     file_name = write_questions(questionList)
                     print("Question added to the question pool")
                     return file_name
-        
-        return questionList
-    replaceQnCheckpoint()
+        replaceQnCheckpoint(num_questions)   
+    replaceQnCheckpoint(num_questions) 
+    return questionList
+
 
 #function to get user to answer question from the QuestionPool.txt and to check if the answer is correct
 def answer_question(questions):
