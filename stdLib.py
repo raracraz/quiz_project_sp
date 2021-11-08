@@ -10,7 +10,9 @@
 import json
 import os #navigate file system
 import base64 #ensures that each character is supported by the file system
-import re #use to manipulate strings
+import re
+import uuid #use to manipulate strings
+rowid = hash(uuid.uuid4())
 class UserDB():
     def create(tableName, colName, colType, rowid, data):
         path = (tableName + '/' + colName)
@@ -106,6 +108,17 @@ class UserDB():
                     print('Error, could not delete file...')
                     return False
 '''
+def aclchecker(rowid, aclcheck):
+    aclraw = UserDB.find('users', 'acl', rowid)
+    try:
+        acl = str(base64.b64decode(aclraw[0].split('_')[2]))[1:]
+        print(acl)
+        if acl[aclcheck] == '1':
+            return True
+        else:
+            return False
+    except:
+        return False
 #database functions finished
 
 #start of quiz functions
@@ -182,6 +195,7 @@ def retake_quiz():
 #function to check if the user answer is correct and print the correct answer and print the score of the user and the total number of questions
 def check_answer(file_name):
     global userAnswerList
+    checkUserAnswerList = userAnswerList
     global num_questions
     num_questions = 3 #delete this line later
     correctAnswerList = []
@@ -193,6 +207,7 @@ def check_answer(file_name):
             q = json.loads(q)
             correctAnswerList.append(q['answer'])
         print(correctAnswerList)
+        print(userAnswerList)
     score = 0
     total = num_questions
     for i in range(len(userAnswerList)):
@@ -323,9 +338,54 @@ def admin_replace_question_pool():
 #the score will be calculated by taking the number of questions correct and dividing it by the number of questions in the question pool
 #the score will be displayed to the user
 
+#main function to run the quiz, if aclchecker is true, the quiz will be run as an admin. If aclchecker is false, the quiz will be run as a user.
+def main():
+    #change aclchecker()
+    if True:
+        print("You are an admin")
+        print("1. Create new Question Pool")
+        print("2. Take Quiz")
+        print("3. Exit")
+        try:
+            choice = int(input("Enter your choice: "))
+            if choice == 1:
+                admin_replace_question_pool()
+                main()
+            elif choice == 2:
+                read_questions("QuestionPool.txt")
+                check_answer("QuestionPool.txt")
+                main()
+            elif choice == 3:
+                print("Goodbye...")
+                return
+            else:
+                print("Invalid choice")
+                main()
+        except ValueError:
+            print("Please enter a number")
+            main()
+    else:
+        print("You have login as a user")
+        print("1. Take Quiz")
+        print("2. Exit")
+        try:
+            choice = int(input("Enter your choice: "))
+            if choice == 1:
+                read_questions("QuestionPool.txt")
+                check_answer("QuestionPool.txt")
+                main()
+            elif choice == 2:
+                print("Goodbye...")
+                return
+            else:
+                print("Invalid choice")
+                main()
+        except ValueError:
+            print("Please enter a number")
+            main()
 
 
-
+'''
 def main():
     """
     Main function
@@ -357,7 +417,9 @@ def main():
     else:
         print("Please enter 1 or 2")
         main()
-
-read_questions('QuestionPool.txt')
-check_answer('QuestionPool.txt')
+'''
+#read_questions('QuestionPool.txt')
+#check_answer('QuestionPool.txt')
 #admin_replace_question_pool()
+
+main()
