@@ -2,7 +2,8 @@ import os
 import re
 import base64
 import datetime
-
+import uuid
+rowid = hash(uuid.uuid4())
 def aclchecker(rowid, aclcheck):
     aclraw = UserDB.find('users', 'acl', 'raw',rowid)
     try:
@@ -27,11 +28,11 @@ def menu(rowid):
         print('Welcome to the The quiz [{}]'.format(username))
     except:
         print('Welcome to the The quiz')
-    print('+==================================+')    
-    print('1. Login')
-    print('2. Register')
-    print('3. Forget password')
-    print('4. Exit')
+        print('+==================================+')    
+        print('1. Login')
+        print('2. Register')
+        print('3. Forget password')
+        print('4. Exit')
     try:
         if aclchecker(rowid, 5) == True:
             print('5. Admin Menu')
@@ -66,13 +67,17 @@ def generateOTP():
     randomNumber = abs(hash(randomNumber) % (10 ** 8))
     return randomNumber
 
+#creates a user with acl, email(for otp recovery), username, password, otp(for password recovery)
 def registerUser(rowid):
+    rowid = hash(uuid.uuid4())
     #acl = '11111' #to create admin user
     acl = '00000'
+
     username = str(input('Please enter your username: '))
     password = str(input('Please enter your password: '))
     email = str(input('Please enter your email: '))
     otp = str(generateOTP())
+    results = ''
     #first let's check if username is already taken
     if UserDB.find('users', 'username', 'bool', username) == True:
         print('Username already taken')
@@ -98,6 +103,7 @@ def registerUser(rowid):
             UserDB.create('users', 'password', 's', rowid, password)
             UserDB.create('users', 'otp', 's', rowid, str(otp))
             UserDB.create('users', 'email', 's', rowid, email)
+            UserDB.create('users', 'rowid', 's', rowid, results)
             print('+==================================+\n')
             print('Registration successful,\nreturn to the menu to login!\n')
             print('your email is {}, recovery OTP is {}'.format(email,otp))
@@ -182,7 +188,7 @@ def forgetPassword(rowid):
 
 class UserDB():
     def create(tableName, colName, colType, rowid, data):
-        path = ('jsonPython/db/' + tableName + '/' + colName)
+        path = (tableName + '/' + colName)
         os.makedirs(path, exist_ok=True)
         data = data.encode('utf-8')
         data = base64.b64encode(data)
@@ -202,7 +208,7 @@ class UserDB():
             data = (data.encode('utf-8'))
             data = str(base64.b64encode(data))[2:-3]
             regex = re.compile(data)
-        for root, dirs, files in os.walk('jsonPython/db/'+ tableName+'/'+ colName):
+        for root, dirs, files in os.walk(tableName+'/'+ colName):
             for file in files:
                 if returnType == 'arr':
                     file_data = file.split('_')[2]
@@ -219,7 +225,7 @@ class UserDB():
         return results
 
     def read(tableName, colName, rowid):
-        path = ('jsonPython/db/' + tableName + '/' + colName)
+        path = (tableName + '/' + colName)
         for root, dirs, files in os.walk(path):
             for file in files:
                 if file.split('_')[0] == str(rowid):
@@ -228,7 +234,7 @@ class UserDB():
                     return data     
     
     def update(tableName, colName, colType, rowid, data, colType2, rowid2, data2, userinput):
-        path = ('jsonPython/db/' + tableName + '/' + colName)
+        path = (tableName + '/' + colName)
         oldFileName = str(colType) + '_' + str(rowid) + '_' + str(data)
         newFileName = str(colType2) + '_' + str(rowid2) + '_' + str(data2)
         for root, dirs, files in os.walk(path):
@@ -242,7 +248,7 @@ class UserDB():
                     return False
 
     def delete(tableName, colName, rowid):
-        path = ('jsonPython/db/' + tableName + '/' + colName + '/' + rowid)
+        path = (tableName + '/' + colName + '/' + rowid)
         if os.path.exists(path):
             os.rmdir(path)
             print('Deleted' + path + 'successfully')
@@ -275,3 +281,5 @@ class UserDB():
                     print('Error, could not delete file...')
                     return False
 '''
+
+menu(rowid)

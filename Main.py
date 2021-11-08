@@ -3,7 +3,7 @@ import stdLib
 import uuid
 import re
 import base64
-
+global dataUser
 # function to show the main menu for the quiz app 
 #let the user choose to login, register, forget password and exit
 def menu():
@@ -64,6 +64,7 @@ def registerUser(rowid):
 
 #function to login using DBcom find function with data
 def login(dataUser, dataPass):
+    
     try:
         print('**WARNING: Case Sensitive**')
         dataUser = str(input('Please enter your username: '))
