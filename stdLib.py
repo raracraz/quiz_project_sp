@@ -164,11 +164,26 @@ def read_questions(file_name):
             #print(userAnswerList)
             print('\n')
 
+#function to let user choose whether to retake the quiz or not
+def retake_quiz():
+    try:
+        user_input = str(input('Do you want to retake the quiz? (y/n): '))
+    except ValueError:
+        print('Invalid input')
+        retake_quiz()
+    if user_input == 'y':
+        return True
+    elif user_input == 'n':
+        return False
+    else:
+        print('Invalid input')
+        retake_quiz()
+
 #function to check if the user answer is correct and print the correct answer and print the score of the user and the total number of questions
 def check_answer(file_name):
     global userAnswerList
     global num_questions
-    num_questions = 2
+    num_questions = 3 #delete this line later
     correctAnswerList = []
     #get the correct answer from the json file
     with open(file_name, 'r') as file:
@@ -178,35 +193,38 @@ def check_answer(file_name):
             q = json.loads(q)
             correctAnswerList.append(q['answer'])
         print(correctAnswerList)
-        score = 0
-        total = num_questions
-        for i in range(len(userAnswerList)):
-            if userAnswerList[i] == correctAnswerList[i]:
-                score += 1
-        print('Your score is: ', score)
-        print('Total number of questions: ', total)
-        percentage = (score/total)*100
-        print('Your percentage score is: ', percentage)
-        #give the user the option to retake the quiz ?
-        #do later
+    score = 0
+    total = num_questions
+    for i in range(len(userAnswerList)):
+        if userAnswerList[i] == correctAnswerList[i]:
+            score += 1
+    print('Your score is: ', score)
+    print('Total number of questions: ', total)
+    percentage = (score/total)*100
+    print('Your percentage score is: ', percentage)
+    #give the user the option to retake the quiz ?
+    retake = retake_quiz()
+    if retake == True:
+        read_questions(file_name)
+        check_answer(file_name)
+    else:
+        print('Thank you for taking the quiz')
+        return
+    print('\n')
+    userAnswerList = []
 
-
-
-
-
-        print('\n')
-        userAnswerList = []
-
+#Question - create a question as a dictionary
 def Question(id, question, options, answer):
     """
     Create a question
     """
     #create a question with the unique id, question, options, and answer
+    #in options the options must be labeled as a, b, c, d
     question = {
-        "id": id,
-        "question": question,
-        "options": options,
-        "answer": answer
+        'id': id,
+        'question': question,
+        'options': options,
+        'answer': answer
     }
     return question
 #if user chooses to create a new question pool, ask user to enter questions to replace the question pool.
@@ -214,7 +232,7 @@ def Question(id, question, options, answer):
 #each question created should have 4 options (A, B, C, D) with the correct answer being A, B, C, or D
 #add the question to a dictionary
 #write the question to a text file
-def replace_question_pool():
+def admin_replace_question_pool():
     """
     Replace question pool
     """
@@ -225,10 +243,10 @@ def replace_question_pool():
         num_questions = int(input("How many questions do you want to add to the question pool? "))
         if num_questions > 10:
             print("You can only add 10 questions maximum")
-            replace_question_pool()
+            admin_replace_question_pool()
     except ValueError:
         print("Please enter a number")
-        replace_question_pool()
+        admin_replace_question_pool()
     
     #ask user to enter questions to replace the question pool
     #loop until the number of questions is equal to num_questions
@@ -237,15 +255,18 @@ def replace_question_pool():
             #ask user to enter a question
             question = input("Enter a question: ")
             #ask user to enter the options
-            optionA = str(input("Enter an option for A: "))
-            optionB = str(input("Enter an option for B: "))
-            optionC = str(input("Enter an option for C: "))
-            optionD = str(input("Enter an option for D: "))
+            optionA = str(input("Enter an option for a: "))
+            optionB = str(input("Enter an option for b: "))
+            optionC = str(input("Enter an option for c: "))
+            optionD = str(input("Enter an option for d: "))
             if optionA == "" or optionB == "" or optionC == "" or optionD == "":
                 print("option cannot be empty")
                 replaceQnCheckpoint(questionList, num_questions)
             #ask user to enter the correct answer
-            answer = str(input("Enter the correct answer: "))
+            answer = str(input("Enter the correct answer(a, b, c, d): "))
+            if answer not in ['a', 'b', 'c', 'd']:
+                print("Invalid answer")
+                replaceQnCheckpoint(questionList, num_questions)
             #if answer in optionA or optionB or optionC or optionD:
                # print("Please enter a valid answer")
                # replaceQnCheckpoint(questionList, num_questions)
@@ -255,6 +276,7 @@ def replace_question_pool():
             questionList.append(question)
             #write the questionList to QuestionPool.txt
             write_questions(questionList)
+            print('Question have been added to the QuestionPool.')
     replaceQnCheckpoint(questionList, num_questions)
     return questionList
 
@@ -324,7 +346,7 @@ def main():
     #add the question to a dictionary
     #write the question to a text file
     if user_input == 1:
-        questions = replace_question_pool()
+        questions = admin_replace_question_pool()
         file_name = write_questions(questions)
     #if user chooses to use an existing question pool, ask user to enter the file name of the question pool
     #read the questions from the file and return a list
@@ -338,3 +360,4 @@ def main():
 
 read_questions('QuestionPool.txt')
 check_answer('QuestionPool.txt')
+#admin_replace_question_pool()
