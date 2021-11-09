@@ -19,4 +19,5 @@ https://www.codegrepper.com/code-examples/python/python+read+json+file+to+dict
 https://www.geeksforgeeks.org/python-convert-string-dictionary-to-dictionary/
 https://www.edureka.co/blog/python-list-length/
 https://stackoverflow.com/questions/13949637/how-to-update-json-file-with-python
+https://www.w3schools.com/python/python_regex.asp
 
