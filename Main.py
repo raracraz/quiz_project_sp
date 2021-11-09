@@ -1,11 +1,12 @@
 import os
-import stdLib
+import stdLibv7
 import uuid
 import re
 import base64
 global dataUser
 # function to show the main menu for the quiz app 
 #let the user choose to login, register, forget password and exit
+'''
 def menu():
     rowid = hash(uuid.uuid4())
     print('\n**Welcome to the The quiz**')
@@ -36,7 +37,8 @@ def menu():
         menu()
 
     menu()
-
+'''
+'''
 def registerUser(rowid):
     acl = '0000'
     try:
@@ -61,7 +63,8 @@ def registerUser(rowid):
     print('Registration successful, return to the menu to login!')
 
     #password = str(input('Please enter your password: '))
-
+'''
+'''
 #function to login using DBcom find function with data
 def login(dataUser, dataPass):
     
@@ -101,9 +104,9 @@ def login(dataUser, dataPass):
         print('Incorrect username')
         login(dataUser, dataPass)
    
-
+'''
 #function to forget password using DBcom find function
-
+'''
 def forgetPassword(rowid):
     try:
         print('**WARNING: Case Sensitive**')
@@ -117,9 +120,5 @@ def forgetPassword(rowid):
     else:
         print('Incorrect username')
         forgetPassword(rowid)
-
-
-
-menu()
-
+'''
 

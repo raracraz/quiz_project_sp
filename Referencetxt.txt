@@ -20,4 +20,6 @@ https://www.geeksforgeeks.org/python-convert-string-dictionary-to-dictionary/
 https://www.edureka.co/blog/python-list-length/
 https://stackoverflow.com/questions/13949637/how-to-update-json-file-with-python
 https://www.w3schools.com/python/python_regex.asp
-
+https://www.stackvidhya.com/python-list-files-in-directory/
+https://www.geeksforgeeks.org/python-re-search-vs-re-match/
+https://www.programiz.com/python-programming/methods/list/index
