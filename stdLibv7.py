@@ -11,7 +11,7 @@ import base64
 import datetime
 import uuid
 import glob
-
+import shutil
 def aclchecker(localrowid, aclcheck):
     aclraw = UserDB.find('users', 'acl', 'id', 'raw',localrowid)
     try:
@@ -92,7 +92,7 @@ def doAdminUserEditList(userid):
     print('5. otp:{}'.format(otp))
     print('\n<ENTER> to go Back')
     try:
-        choice = int(input('Please enter your choice: [1-6]'))
+        choice = int(input('Please enter your choice: [1-5]'))
 
         if choice == 6:
             doAdminListUsers(userid)
@@ -135,6 +135,19 @@ def doAdminListUsers(rowid):
     
 
 def doAdminQuestions(rowid):
+    print('Welcome to the question admin menu')
+    print('1. Create new question pool ')
+    print('2. List Question Pools to Update/Delete')
+    print('\n<ENTER> to go Back')
+    try:
+        choice = int(input('Please enter your choice: '))
+    except ValueError:
+        adminMenu(rowid)
+    if choice == 1:
+        createQuestionPool(rowid)
+    elif choice == 2:
+        listQuestionPool(rowid)
+
     pass
 
 def menu(localrowid=hash(uuid.uuid4())):
@@ -250,7 +263,6 @@ def registerUser(rowid,fromwhere, acl = '00000'):
 
     if username_pass == True and email_pass == True:
         try:
-
             UserDB.create('users', 'acl', 's', localrowid, acl)
             UserDB.create('users', 'username', 's', localrowid, username)
             UserDB.create('users', 'password', 's', localrowid, password)
@@ -436,11 +448,11 @@ class UserDB():
                     print('Error, could not update file...')
                     return False
 
-    def delete(tableName, colName, localrowid):
-        path = ('jsonPython/db/' + tableName + '/' + colName + '/' + localrowid)
+    def delete(tableName):
+        path = ('jsonPython/db/' + tableName )
         if os.path.exists(path):
-            os.rmdir(path)
-            print('Deleted' + path + 'successfully')
+            shutil.rmtree(path)
+            print('Deleted\t' + path + 'successfully')
             return True
         else:
             print('This table does not exist...')
@@ -450,4 +462,54 @@ class UserDB():
 
 #start of main quiz functions
 
-menu()
+#function to use UserDB.create() to create the question pool with different rowids only if acl is 11111.
+def createQuestionPool(localrowid):
+   
+    print('+==================================+\n')
+    print('Creating Question Pool...')
+    print('+==================================+\n')
+    #create the question pool
+    #delete current questions
+    for i in range(1,11):
+        UserDB.delete('questions')
+    print('How many questions do you want to have in the quiz?')
+    print('(max 10)')
+    questionCount = int(input('> '))
+    for i in range(1,questionCount+1):
+        print('Creating Question {}'.format(i))
+        print('What is the question?')
+        question = input('> ')
+        for j in range(1,5):
+            options = []
+            print('What is option {}?'.format(j))
+            inputOptions = input('> ')
+            options.append(inputOptions)
+        print('What is the correct answer?')
+        correctAnswer = input('> ')
+        if correctAnswer not in options:
+            print('Error, the correct answer is not in the options...')
+        else:
+            UserDB.create('questions','question'+str(i),'option'+str(j),localrowid,[options])
+            UserDB.create('questions','question'+str(i),'correctAnswer',localrowid,correctAnswer)
+            print('Question {} created successfully'.format(i))
+        UserDB.create('questions', 'question'+str(i), 'raw', localrowid, question+str(i))
+    print('+==================================+\n')
+    print('Question Pool Created...')
+    print('+==================================+\n')
+    adminMenu(localrowid)
+    
+
+def listQuestionPool(localrowid):
+    print('+==================================+\n')
+    print('Listing Question Pool...')
+    print('+==================================+\n')
+    #list the question pool
+    for i in range(1,11):
+        print('Question '+str(i)+': '+UserDB.read('questions', 'question'+str(i), localrowid))
+    print('+==================================+\n')
+    menu(localrowid)
+
+
+
+#menu()
+adminMenu('85324259')
