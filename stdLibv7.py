@@ -144,7 +144,7 @@ def doAdminQuestions(rowid):
     except ValueError:
         adminMenu(rowid)
     if choice == 1:
-        createQuestionPool(rowid)
+        adminCreateQuestionPool(rowid)
     elif choice == 2:
         listQuestionPool(rowid)
 
@@ -370,6 +370,15 @@ class UserDB():
         with open(path +'/'+ filename, 'w+') as f:
             f.write(str(data))
         return localrowid
+        
+    
+    def createQn(tableName, colName, colType, localrowid, data):
+        path = ('jsonPython/db/' + tableName + '/' + colName)
+        os.makedirs(path, exist_ok=True)
+        filename = str(localrowid) + '_' + str(colType) + '_' + str(data)[2:-1]
+        with open(path +'/'+ filename, 'w+') as f:
+            f.write(str(data))
+        return localrowid
 
     def find(tableName, colName, searchPart, returnType, data):
         results = []
@@ -452,7 +461,7 @@ class UserDB():
         path = ('jsonPython/db/' + tableName )
         if os.path.exists(path):
             shutil.rmtree(path)
-            print('Deleted\t' + path + 'successfully')
+            print('Deleted\t' + path + '\tsuccessfully')
             return True
         else:
             print('This table does not exist...')
@@ -463,39 +472,52 @@ class UserDB():
 #start of main quiz functions
 
 #function to use UserDB.create() to create the question pool with different rowids only if acl is 11111.
-def createQuestionPool(localrowid):
+def adminCreateQuestionPool(localrowid):
    
     print('+==================================+\n')
     print('Creating Question Pool...')
     print('+==================================+\n')
     #create the question pool
     #delete current questions
-    for i in range(1,11):
-        UserDB.delete('questions')
+    
+    UserDB.delete('questions')
     print('How many questions do you want to have in the quiz?')
     print('(max 10)')
-    questionCount = int(input('> '))
+    print('Press <Enter> to go back\n')
+    
+    try:
+        questionCount = int(input('> '))
+    except ValueError:
+        adminMenu(localrowid)
+    if questionCount < 1 or questionCount > 10:
+        print('Invalid number of questions...')
+        adminMenu(localrowid)
     for i in range(1,questionCount+1):
+        options = []
         print('Creating Question {}'.format(i))
         print('What is the question?')
         question = input('> ')
+        question+str(i)
+        question = question.encode('utf-8')
         for j in range(1,5):
-            options = []
             print('What is option {}?'.format(j))
             inputOptions = input('> ')
+            inputOptions = inputOptions.encode('utf-8')
             options.append(inputOptions)
         print('What is the correct answer?')
         correctAnswer = input('> ')
+        correctAnswer = correctAnswer.encode('utf-8')
         if correctAnswer not in options:
             print('Error, the correct answer is not in the options...')
+            adminCreateQuestionPool(localrowid)
         else:
-            UserDB.create('questions','question'+str(i),'option'+str(j),localrowid,[options])
-            UserDB.create('questions','question'+str(i),'correctAnswer',localrowid,correctAnswer)
+            UserDB.createQn('questions','options','r',localrowid,[options])
+            UserDB.createQn('questions','correctAnswers','r',localrowid,correctAnswer)
             print('Question {} created successfully'.format(i))
-        UserDB.create('questions', 'question'+str(i), 'raw', localrowid, question+str(i))
-    print('+==================================+\n')
-    print('Question Pool Created...')
-    print('+==================================+\n')
+        UserDB.createQn('questions', 'questions', 'r', localrowid, question)
+        print('+==================================+\n')
+        print('\n')
+        print('+==================================+\n')
     adminMenu(localrowid)
     
 
@@ -504,12 +526,63 @@ def listQuestionPool(localrowid):
     print('Listing Question Pool...')
     print('+==================================+\n')
     #list the question pool
-    for i in range(1,11):
-        print('Question '+str(i)+': '+UserDB.read('questions', 'question'+str(i), localrowid))
+    allQns = UserDB.find('questions', 'questions', 'id', 'raw','')
+    print(allQns)
+    allQnscnt = len(allQns)
+    Qnscnt = 1
+    for allQnscnt in allQns:
+        print("{}. {}/{}".format(Qnscnt,str((allQnscnt.split('_')[2])),str(allQnscnt.split('_')[0])))
+        Qnscnt = Qnscnt + 1
     print('+==================================+\n')
-    menu(localrowid)
+    print('Which question do you want to modify?: ')
+    print('Press <Enter> to go back\n')
+    try:
+        questionNumber = int(input('> '))
 
+    except ValueError:
+        doAdminQuestions(localrowid)
 
+def editQuestion(localrowid):
+    print('+==================================+\n')
+    print('Editing Question...')
+    print('+==================================+\n')
+    #edit a question
+    #get the question number
+    questionNumber = int(input('Which question do you want to edit?: '))
+    #get the question
+    question = UserDB.find('questions', 'questions', questionNumber)
+    #get the options
+    options = UserDB.read('questions', 'options', questionNumber)
+    #get the correct answer
+    correctAnswer = UserDB.read('questions', 'correctAnswers', questionNumber)
+    #print the question
+    print('Question: {}'.format(question))
+    #print the options
+    print('Options: {}'.format(options))
+    #print the correct answer
+    print('Correct Answer: {}'.format(correctAnswer))
+    print('+==================================+\n')
+    print('What do you want to edit?: ')
+    print('1. Question')
+    print('2. Options')
+    print('3. Correct Answer')
+    print('4. Back')
+    print('Press <Enter> to go back\n')
+    try:
+        editChoice = int(input('> '))
+    except ValueError:
+        doAdminQuestions(localrowid)
+    if editChoice == 1:
+        print('What is the new question?: ')
+        newQuestion = input('> ')
+        newQuestion = newQuestion.encode('utf-8')
+        UserDB.update('questions', 'questions', 'r', questionNumber, newQuestion)
+        print('Question updated successfully')
+        editQuestion(localrowid)
+    elif editChoice == 2:
+        print('What are the new options?: ')
+        newOptions = input('> ')
+        newOptions = newOptions.encode('utf-8')
 
 #menu()
 adminMenu('85324259')
