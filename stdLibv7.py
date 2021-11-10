@@ -8,6 +8,7 @@
 import os
 import re
 import base64
+import json
 import datetime
 import uuid
 import glob
@@ -107,6 +108,8 @@ def doAdminUserEditList(userid):
     except ValueError:
         doAdminListUsers(userid)
     
+####################################################################################################################################
+
 
 def doAdminListUsers(rowid):
     userlist = []
@@ -120,7 +123,7 @@ def doAdminListUsers(rowid):
     print('\n<ENTER> to go Back')
 
     try:
-        choice = int(input('Please enter your choice: [{}-{}]' .format(1,alluserscnt)))
+        choice = int(input('Please enter your choice: [{}-{}]: ' .format(1,alluserscnt)))
     except ValueError:
         doAdminUser(rowid)
 
@@ -364,9 +367,12 @@ class UserDB():
     def create(tableName, colName, colType, localrowid, data):
         path = ('jsonPython/db/' + tableName + '/' + colName)
         os.makedirs(path, exist_ok=True)
-        data = data.encode('utf-8')
-        data = base64.b64encode(data)
-        filename = str(localrowid) + '_' + str(colType) + '_' + str(data)[2:-1]
+        if colType == 's':
+            data = data.encode('utf-8')
+            data = str(base64.b64encode(data))[2:-1]
+        
+
+        filename = str(localrowid) + '_' + str(colType) + '_' + str(data)
         with open(path +'/'+ filename, 'w+') as f:
             f.write(str(data))
         return localrowid
@@ -434,14 +440,21 @@ class UserDB():
         path = ('jsonPython/db/' + tableName + '/' + colName)
         for root, dirs, files in os.walk(path):
             for file in files:
-                if file.split('_')[0] == str(localrowid):
-                    data = data.encode('utf-8')
-                    data = base64.b64encode(data)
-                    data = str(data)[2:-1]
-                    os.remove(path +'/'+ file)
-                    with open(path +'/'+ str(localrowid) + '_' + colType + '_' + str(data), 'w+') as f:
-                        f.write(str(data))
-                    return data     
+                if colType == 's':
+                    if file.split('_')[0] == str(localrowid):
+                        data = data.encode('utf-8')
+                        data = base64.b64encode(data)
+                        data = str(data)[2:-1]
+                        os.remove(path +'/'+ file)
+                        with open(path +'/'+ str(localrowid) + '_' + colType + '_' + str(data), 'w+') as f:
+                            f.write(str(data))
+                        return data   
+                else:
+                    if file.split('_')[0] == str(localrowid):
+                        os.remove(path +'/'+ file)
+                        with open(path +'/'+ str(localrowid) + '_' + colType + '_' + str(data), 'w+') as f:
+                            f.write(str(data))
+                        return data  
     
     def BAKupdate(tableName, colName, colType, rowid, data, colType2, rowid2, data2, userinput):
         path = ('jsonPython/db/' + tableName + '/' + colName)
@@ -498,29 +511,29 @@ def adminCreateQuestionPool(localrowid):
         print('What is the question?')
         question = input('> ')
         question+str(i)
-        question = question.encode('utf-8')
+        #question = question.encode('utf-8')
         for j in range(1,5):
             print('What is option {}?'.format(j))
             inputOptions = input('> ')
-            inputOptions = inputOptions.encode('utf-8')
+            #inputOptions = inputOptions.encode('utf-8')
             options.append(inputOptions)
         print('What is the correct answer?')
         correctAnswer = input('> ')
-        correctAnswer = correctAnswer.encode('utf-8')
+       #correctAnswer = correctAnswer.encode('utf-8')
         if correctAnswer not in options:
             print('Error, the correct answer is not in the options...')
             adminCreateQuestionPool(localrowid)
-        else:
-            UserDB.createQn('questions','options','r',localrowid,[options])
-            UserDB.createQn('questions','correctAnswers','r',localrowid,correctAnswer)
-            print('Question {} created successfully'.format(i))
-        UserDB.createQn('questions', 'questions', 'r', localrowid, question)
+        
+        UserDB.create('questions','options','r',localrowid,[options])
+        UserDB.create('questions','correctAnswers','r',localrowid,correctAnswer)
+        print('Question {} created successfully'.format(i))
+        UserDB.create('questions', 'questions', 'r', localrowid, question)
         print('+==================================+\n')
         print('\n')
         print('+==================================+\n')
     adminMenu(localrowid)
     
-
+##
 def listQuestionPool(localrowid):
     print('+==================================+\n')
     print('Listing Question Pool...')
@@ -529,60 +542,84 @@ def listQuestionPool(localrowid):
     allQns = UserDB.find('questions', 'questions', 'id', 'raw','')
     print(allQns)
     allQnscnt = len(allQns)
+    allQnsnum = len(allQns)
     Qnscnt = 1
     for allQnscnt in allQns:
         print("{}. {}/{}".format(Qnscnt,str((allQnscnt.split('_')[2])),str(allQnscnt.split('_')[0])))
         Qnscnt = Qnscnt + 1
     print('+==================================+\n')
     print('Which question do you want to modify?: ')
-    print('Press <Enter> to go back\n')
+    
+    print('\nPress <Enter> to go back\n')
     try:
-        questionNumber = int(input('> '))
-
+        questionNumber = int(input('Please enter from [{}-{}]: '.format(1,allQnsnum)))
+        adminModifyQuestion(localrowid, questionNumber)
     except ValueError:
         doAdminQuestions(localrowid)
 
-def editQuestion(localrowid):
+
+
+def adminModifyQuestion(localrowid, questionNumber):
     print('+==================================+\n')
-    print('Editing Question...')
+    print('Modifying Question...')
     print('+==================================+\n')
-    #edit a question
-    #get the question number
-    questionNumber = int(input('Which question do you want to edit?: '))
-    #get the question
-    question = UserDB.find('questions', 'questions', questionNumber)
-    #get the options
-    options = UserDB.read('questions', 'options', questionNumber)
-    #get the correct answer
-    correctAnswer = UserDB.read('questions', 'correctAnswers', questionNumber)
-    #print the question
-    print('Question: {}'.format(question))
-    #print the options
-    print('Options: {}'.format(options))
-    #print the correct answer
-    print('Correct Answer: {}'.format(correctAnswer))
+    if questionNumber < 1 or questionNumber > 10:
+        print('Invalid number of questions...')
+        adminMenu(localrowid)
+    else:
+        questionNumber = questionNumber - 1
+        question = UserDB.find('questions', 'questions', 'id', 'raw', '')
+        question = question[questionNumber]
+        options = UserDB.find('questions', 'options', 'id', 'raw', '')
+        options = options[questionNumber]
+        correctAnswer = UserDB.find('questions', 'correctAnswers', 'id', 'raw', '')
+        correctAnswer = correctAnswer[questionNumber]
+        print('Question: {}'.format(question.split('_')[2]))
+        print('Options: {}'.format(options.split('_')[2]))
+        print('Correct Answer: {}'.format(correctAnswer.split('_')[2]))
+        print('+==================================+\n')
+        print('What do you want to modify?')
+        print('1. Question')
+        print('2. Options')
+        print('3. Correct Answer')
+        print('\nPress <Enter> to go back')
+        print('+==================================+\n')
+        try:
+            modifyChoice = int(input('> '))
+        except ValueError:
+            adminMenu(localrowid)
+        if modifyChoice == 1:
+            print(question)
+            modifyChoice = modifyChoice - 1
+            question = question.split('_')[2]
+            print(question)
+            print('What is the new question?')
+            newQuestion = input('> ')
+            question = newQuestion
+            UserDB.update('questions', 'questions', 'r', localrowid, question)
+            print('Question successfully modified')
+            adminModifyQuestion(localrowid, questionNumber)
+        elif modifyChoice == 2:
+            print('What is the new option?')
+            newOption = input('> ')
+            options.append(newOption)
+            UserDB.update('questions', 'options', 'r', localrowid, newOption)
+            print('Option successfully modified')
+            adminModifyQuestion(localrowid, questionNumber)
+        elif modifyChoice == 3:
+            print('What is the new correct answer?')
+            newCorrectAnswer = input('> ')
+            UserDB.update('questions', 'correctAnswers', 'r', localrowid, newCorrectAnswer)
+            print('Correct Answer successfully modified')
+    adminModifyQuestion(localrowid, questionNumber)
+
+def modifyQuestion(localrowid):
     print('+==================================+\n')
-    print('What do you want to edit?: ')
-    print('1. Question')
-    print('2. Options')
-    print('3. Correct Answer')
-    print('4. Back')
-    print('Press <Enter> to go back\n')
-    try:
-        editChoice = int(input('> '))
-    except ValueError:
-        doAdminQuestions(localrowid)
-    if editChoice == 1:
-        print('What is the new question?: ')
-        newQuestion = input('> ')
-        newQuestion = newQuestion.encode('utf-8')
-        UserDB.update('questions', 'questions', 'r', questionNumber, newQuestion)
-        print('Question updated successfully')
-        editQuestion(localrowid)
-    elif editChoice == 2:
-        print('What are the new options?: ')
-        newOptions = input('> ')
-        newOptions = newOptions.encode('utf-8')
+    print('Modifying Question...')
+    print('+==================================+\n')
+    print('What is the new Question?')
+    newQuestion = input('> ')
+    #UserDB.update('questions', 'questions', 'r', localrowid, questionNumber, newQuestion)
 
 #menu()
 adminMenu('85324259')
