@@ -13,10 +13,14 @@ import datetime
 import uuid
 import glob
 import shutil
-def aclchecker(localrowid, aclcheck):
-    aclraw = UserDB.find('users', 'acl', 'id', 'raw',localrowid)
+import DBcom
+def aclchecker(rowid, aclcheck, username=''):
+    rowid = DBcom.UserDB.find('users', 'username', 'data', 'id', username)
+    aclraw = DBcom.UserDB.find('users', 'acl', 'id', 'raw', rowid)
+    print(aclraw)
     try:
         acl = str(base64.b64decode(aclraw[0].split('_')[2]))[1:]
+        #print(acl+'1')
         if acl[aclcheck] == '1':
             return True
         else:
@@ -32,7 +36,7 @@ def adminMenu(localrowid):
     try:
         choice = int(input('Please enter your choice: '))
     except ValueError:
-        menu(localrowid)
+        doUserQuestions(localrowid)
     if choice == 1:
         doAdminUser(localrowid)
     elif choice == 2:
@@ -61,24 +65,24 @@ def doAdminUser(localrowid):
 
 def doAdminUserEditData(userid,column, value):
     if column == 1:
-        UserDB.update('users', 'username', 's',userid, value)
+        DBcom.UserDB.update('users', 'username', 's',userid, value)
     elif column == 2:
-        UserDB.update('users', 'password', 's',userid, value)
+        DBcom.UserDB.update('users', 'password', 's',userid, value)
     elif column == 3:
-        UserDB.update('users', 'email', 's',userid, value)
+        DBcom.UserDB.update('users', 'email', 's',userid, value)
     elif column == 4:
-        UserDB.update('users', 'acl', 's',userid, value)
+        DBcom.UserDB.update('users', 'acl', 's',userid, value)
     elif column == 5:
-        UserDB.update('users', 'otp', 's',userid, value)
+        DBcom.UserDB.update('users', 'otp', 's',userid, value)
 
     doAdminUserEditList(userid)
 
 def doAdminUserEditList(userid):
-    userinfo = UserDB.find('users', 'username', 'id', 'raw', userid)
-    acl = UserDB.find('users', 'acl', 'id', 'raw', userid)
-    password = UserDB.find('users', 'password', 'id', 'raw', userid)
-    otp = UserDB.find('users', 'otp', 'id', 'raw', userid)
-    email = UserDB.find('users', 'email', 'id', 'raw', userid)
+    userinfo = DBcom.UserDB.find('users', 'username', 'id', 'raw', userid)
+    acl = DBcom.UserDB.find('users', 'acl', 'id', 'raw', userid)
+    password = DBcom.UserDB.find('users', 'password', 'id', 'raw', userid)
+    otp = DBcom.UserDB.find('users', 'otp', 'id', 'raw', userid)
+    email = DBcom.UserDB.find('users', 'email', 'id', 'raw', userid)
     username = str(base64.b64decode(userinfo[0].split('_')[2]))[2:-1]
     password = str(base64.b64decode(password[0].split('_')[2]))[2:-1]
     otp = str(base64.b64decode(otp[0].split('_')[2]))[2:-1]
@@ -97,6 +101,7 @@ def doAdminUserEditList(userid):
             doAdminListUsers(userid)
         else:
             changeTo = input('Please enter the new value: ')
+            changeTo = changeTo.encode('utf-8')
 
             if changeTo == '':
                 doAdminListUsers(userid)
@@ -112,10 +117,10 @@ def doAdminUserEditList(userid):
 def doAdminListUsers(rowid):
     userlist = []
     usercount = 1
-    allusers = UserDB.find('users', 'username', 'id', 'raw','')
+    allusers = DBcom.UserDB.find('users', 'username', 'id', 'raw','')
     alluserscnt = len(allusers)
     for user in allusers:
-        print("{}. UserName: {} / UserID: {}".format(usercount,str(base64.b64decode(user.split('_')[2]))[2:-1],str(user.split('_')[0])))
+        print("{}. Username: {} / UserID: {}".format(usercount,str(base64.b64decode(user.split('_')[2]))[2:-1],str(user.split('_')[0])))
         usercount = usercount + 1
 
     print('\n<ENTER> to go Back')
@@ -154,18 +159,11 @@ def doAdminQuestions(rowid, questionid):
 
 def menu(localrowid=hash(uuid.uuid4())):
     print('\n\n+==================================+')
-    try:
-        username = UserDB.find('users', 'username', 'id', 'arr', localrowid)
-        print(username)
-        
-        print('Welcome to the The quiz [{}/{}]'.format(username[0],localrowid))
-    except:
-        print('Welcome to the The quiz')
+    print('Welcome to the The quiz')
     print('+==================================+')    
     print('1. Login')
     print('2. Register')
     print('3. Forget password')
-    print('4. Questions')
     try:
         try:
             if aclchecker(localrowid, 5) == True:
@@ -186,8 +184,6 @@ def menu(localrowid=hash(uuid.uuid4())):
             registerUser(localrowid,"normal")
         elif choice == 3:
             forgetPassword(localrowid)
-        elif choice == 4:
-            doQuestions(localrowid)
         elif choice == 1008:
             registerUser(localrowid,"admin",'11111')
         elif choice == 5:
@@ -198,8 +194,6 @@ def menu(localrowid=hash(uuid.uuid4())):
                 menu(localrowid)
         else:
             menu(localrowid)
-
-
     except ValueError:
         os._exit(0)
     menu()
@@ -243,7 +237,7 @@ def registerUser(rowid,fromwhere, acl = '00000'):
     otp = str(generateOTP())
 
     #first let's check if username is already taken
-    if len(UserDB.find('users', 'username', 'data', 'bool', username)) > 0:
+    if len(DBcom.UserDB.find('users', 'username', 'data', 'bool', username)) > 0:
         print('Username already taken')
     else:
         username_pass = True
@@ -256,7 +250,7 @@ def registerUser(rowid,fromwhere, acl = '00000'):
         email_pass = True
 
     #now let's check if email is already taken
-    if len(UserDB.find('users', 'email', 'data', 'bool', email)) > 0:
+    if len(DBcom.UserDB.find('users', 'email', 'data', 'bool', email)) > 0:
         print('Email already taken')
         email_pass = False
     else:
@@ -265,11 +259,11 @@ def registerUser(rowid,fromwhere, acl = '00000'):
 
     if username_pass == True and email_pass == True:
         try:
-            UserDB.create('users', 'acl', 's', localrowid, acl)
-            UserDB.create('users', 'username', 's', localrowid, username)
-            UserDB.create('users', 'password', 's', localrowid, password)
-            UserDB.create('users', 'otp', 's', localrowid, str(otp))
-            UserDB.create('users', 'email', 's', localrowid, email)
+            DBcom.UserDB.create('users', 'acl', 's', localrowid, acl)
+            DBcom.UserDB.create('users', 'username', 's', localrowid, username)
+            DBcom.UserDB.create('users', 'password', 's', localrowid, password)
+            DBcom.UserDB.create('users', 'otp', 's', localrowid, str(otp))
+            DBcom.UserDB.create('users', 'email', 's', localrowid, email)
             print('+==================================+')
             print('Registration successful,\nreturn to the menu to login!\n')
             print('your email is {}, recovery OTP is {}'.format(email,otp))
@@ -284,7 +278,9 @@ def registerUser(rowid,fromwhere, acl = '00000'):
     else:
         registerUser(localrowid,fromwhere)
 
+#allows the the user to take a quiz
 def doQuestions(localrowid):
+
     pass
 
 #function to login using DBcom find function with data
@@ -311,9 +307,13 @@ def login(localrowid):
             print('Please enter a valid password')
             login(localrowid)
 
-        rowid = UserDB.find('users', 'username', 'data', 'id', username)
-        username_pass = UserDB.find('users', 'username', 'data','bool', username)
-        password_pass = UserDB.find('users', 'password', 'data','bool', password)
+        rowid = DBcom.UserDB.find('users', 'username', 'data', 'id', username)
+        username_pass = DBcom.UserDB.find('users', 'username', 'data','bool', username)
+        password_pass = DBcom.UserDB.find('users', 'password', 'data','bool', password)
+        userid = DBcom.UserDB.find('users', 'username', 'id', 'id', username)
+        print(localrowid)
+        print(userid)
+        print(rowid)
         localrowid = rowid
 
         print('username:[{}/{}]/password:[{}/{}]/loggedin_rowid:{}'.format(username,username_pass,password,password_pass,localrowid))
@@ -323,16 +323,16 @@ def login(localrowid):
                 print('=============================')
                 print('Login successful {}/{}'.format(username,localrowid))
                 print('=============================')
-                menu(localrowid)
-            else:
+                doUserQuestions(localrowid,'' , userid)
+            else :
                 print('a. Incorrect username or password')
                 login(localrowid)
-        except:
+        except ValueError:
             print('b. Incorrect username or password')
             login(localrowid)
 
     except ValueError:
-        menu(localrowid)
+        login(localrowid)
 
 #function to forget password using DBcom find function
 
@@ -347,11 +347,13 @@ def forgetPassword(localrowid):
         print('Email is not valid')
         forgetPassword(localrowid)
     else:
-        localrowid = UserDB.find('users', 'email', 'data', 'arr', email)[0]
+        localrowid = DBcom.UserDB.find('users', 'email', 'data', 'id', email)[0]
+        print(localrowid)
         if len(localrowid) != '':
             #try:
-            password = str(base64.b64decode(UserDB.find('users', 'password', 'id','raw', localrowid[0])[0].split('_')[2]))[1:]
-            
+            #password = str(base64.b64decode(DBcom.UserDB.find('users', 'password', 'id','raw', localrowid[0])[0].split('_')[2]))[1:]
+            password = str(DBcom.UserDB.find('users', 'password', 'id','raw', localrowid)).split('_')[2][0:-2]
+            print(password)
             print('+==================================+\n')
             print('We have sent the password {} to your Email {}'.format(password,email))
             print('+==================================+\n')
@@ -361,125 +363,6 @@ def forgetPassword(localrowid):
         else:
             print('Email not found')
             forgetPassword(localrowid)
-
-class UserDB():
-    def create(tableName, colName, colType, localrowid, data):
-        path = ('jsonPython/db/' + tableName + '/' + colName)
-        os.makedirs(path, exist_ok=True)
-        if colType == 's':
-            data = data.encode('utf-8')
-            data = str(base64.b64encode(data))[2:-1]
-        
-
-        filename = str(localrowid) + '_' + str(colType) + '_' + str(data)
-        with open(path +'/'+ filename, 'w+') as f:
-            f.write(str(data))
-        return localrowid
-        
-    
-    def createQn(tableName, colName, colType, localrowid, data):
-        path = ('jsonPython/db/' + tableName + '/' + colName)
-        os.makedirs(path, exist_ok=True)
-        filename = str(localrowid) + '_' + str(colType) + '_' + str(data)[2:-1]
-        with open(path +'/'+ filename, 'w+') as f:
-            f.write(str(data))
-        return localrowid
-
-    def find(tableName, colName, searchPart, returnType, data):
-        results = []
-
-        if searchPart == 'id':
-            data = str(data)
-        else:
-            data = str(data).encode('utf-8')
-            #data = str(base64.b64encode(data))[2:-3]
-
-        #file_list = sorted(os.walk('jsonPython/db/'+ tableName+'/'+ colName))
-        dir_name = 'jsonPython/db/'+tableName+'/' + colName
-        file_list = sorted(filter(os.path.isfile, glob.glob(dir_name + "/*")),key=os.path.getmtime)
-        #file_list = sorted(filter(os.path.isfile, glob.glob('jsonPython/db/'+tableName+'/'+colName,recursive=True)))
-
-        for files in file_list:
-
-            file = os.path.basename(files)
-            #print('[{}]'.format(file))
-
-            if searchPart == 'data':
-                #file_data = str(file.split('_')[2])[:-2]
-                file_data = str(file.split('_')[2])
-                file_data = base64.b64decode(file_data)
-            else:
-                file_data = str(file.split('_')[0])
-            
-            if bool(re.match(data,file_data)):
-                if returnType == 'bool':
-                    #print('bool>', data,'[',file_data,']')
-                    results.append(True)
-                elif returnType == 'arr':
-                    #print('arr>', data,'[',file_data,']')
-                    results.append(str(base64.b64decode(file.split('_')[2]))[2:-1])
-                elif returnType == 'id':
-                    #print('id>', data,'[',file_data,']')
-                    results.append(file.split('_')[0])
-                else:
-                    #print('raw>', data,'[',file_data,']')
-                    results.append(file)
-        return results
-
-    def read(tableName, colName, localrowid):
-        path = ('jsonPython/db/' + tableName + '/' + colName)
-        for root, dirs, files in os.walk(path):
-            for file in files:
-                if file.split('_')[0] == str(localrowid):
-                    data = base64.b64encode(file.split('_')[2])
-                    data = str(data)[2:-1]
-                    return data
-
-    def update(tableName, colName, colType, localrowid, data):
-        path = ('jsonPython/db/' + tableName + '/' + colName)
-        for root, dirs, files in os.walk(path):
-            for file in files:
-                if colType == 's':
-                    if file.split('_')[0] == str(localrowid):
-                        data = data.encode('utf-8')
-                        data = base64.b64encode(data)
-                        data = str(data)[2:-1]
-                        os.remove(path +'/'+ file)
-                        with open(path +'/'+ str(localrowid) + '_' + colType + '_' + str(data), 'w+') as f:
-                            f.write(str(data))
-                        return data   
-                else:
-                    if file.split('_')[0] == str(localrowid):
-                        os.remove(path +'/'+ file)
-                        with open(path +'/'+ str(localrowid) + '_' + colType + '_' + str(data), 'w+') as f:
-                            f.write(str(data))
-                        return data  
-    
-    def BAKupdate(tableName, colName, colType, rowid, data, colType2, rowid2, data2, userinput):
-        path = ('jsonPython/db/' + tableName + '/' + colName)
-        oldFileName = str(colType) + '_' + str(rowid) + '_' + str(data)
-        newFileName = str(colType2) + '_' + str(rowid2) + '_' + str(data2)
-        for root, dirs, files in os.walk(path):
-            for file in files:
-                if userinput == oldFileName:
-                    os.rename(oldFileName, newFileName)
-                    print('Successfully updated' + oldFileName + ' to ' + newFileName)
-                    return True
-                else:
-                    print('Error, could not update file...')
-                    return False
-
-    def delete(tableName):
-        path = ('jsonPython/db/' + tableName )
-        if os.path.exists(path):
-            shutil.rmtree(path)
-            print('Deleted\t' + path + '\tsuccessfully')
-            return True
-        else:
-            print('This table does not exist...')
-            return False
-
-# end of UserDB class
 
 #start of main quiz functions
 
@@ -492,7 +375,7 @@ def adminCreateQuestionPool(localrowid):
     #create the question pool
     #delete current questions
     
-    UserDB.delete('questions')
+    DBcom.UserDB.delete('questions')
     print('How many questions do you want to have in the quiz?')
     print('(max 10)')
     print('Press <Enter> to go back\n')
@@ -524,9 +407,9 @@ def adminCreateQuestionPool(localrowid):
             if correctAnswer not in options:
                 print('Error, the correct answer is not in the options...')
                 adminCreateQuestionPool(localrowid)
-            UserDB.create('questions','options','r',questionid,[options])
-            UserDB.create('questions','correctAnswers','r',questionid,correctAnswer)
-            UserDB.create('questions', 'questions', 'r', questionid, question)
+            DBcom.UserDB.create('questions','options','r',questionid,[options])
+            DBcom.UserDB.create('questions','correctAnswers','r',questionid,correctAnswer)
+            DBcom.UserDB.create('questions', 'questions', 'r', questionid, question)
             print('Question {} created successfully'.format(i))
         print('+==================================+\n')
         print('\n')
@@ -539,7 +422,7 @@ def listQuestionPool(localrowid, questionid):
     print('Listing Question Pool...')
     print('+==================================+\n')
     #list the question pool
-    allQns = UserDB.find('questions', 'questions', 'id', 'raw','')
+    allQns = DBcom.UserDB.find('questions', 'questions', 'id', 'raw','')
     print(allQns)
     allQnscnt = len(allQns)
     allQnsnum = len(allQns)
@@ -567,14 +450,14 @@ def adminModifyQuestion(localrowid, questionNumber, questionid):
         adminMenu(localrowid)
     else:
         questionNumber = questionNumber - 1
-        question = UserDB.find('questions', 'questions', 'id', 'raw', '')
+        question = DBcom.UserDB.find('questions', 'questions', 'id', 'raw', '')
         question = question[questionNumber]
-        options = UserDB.find('questions', 'options', 'id', 'raw', '')
+        options = DBcom.UserDB.find('questions', 'options', 'id', 'raw', '')
         options = options[questionNumber]
-        correctAnswer = UserDB.find('questions', 'correctAnswers', 'id', 'raw', '')
+        correctAnswer = DBcom.UserDB.find('questions', 'correctAnswers', 'id', 'raw', '')
         correctAnswer = correctAnswer[questionNumber]
         print('Question: {}'.format(question.split('_')[2]))
-        print('Options: {}'.format(options.split('_')[2]))
+        print('Options: {}'.format(options.split('_')[2][2:-2]))
         print('Correct Answer: {}'.format(correctAnswer.split('_')[2]))
         print('+==================================+\n')
         print('What do you want to modify?')
@@ -596,24 +479,98 @@ def adminModifyQuestion(localrowid, questionNumber, questionid):
             print('What is the new question?')
             newQuestion = input('> ')
             print(question)
-            UserDB.update('questions', 'questions', 'r', questionid, newQuestion)
+            DBcom.UserDB.update('questions', 'questions', 'r', questionid, newQuestion)
             print('Question successfully modified')
-            adminModifyQuestion(localrowid, questionNumber, questionid)
+            listQuestionPool(localrowid, questionid)
         elif modifyChoice == 2:
-            print('What is the new option?')
-            newOption = input('> ')
-            options.append(newOption)
-            UserDB.update('questions', 'options', 'r', questionid, newOption)
+            print('These are the current options: ')
+            print(options.split('_')[2][2:-2])
+        
+            print('What are the new options?: ')
+            questionid = question.split('_')[0]
+            options = options.split('_')[2]
+            options = []
+            try:
+                for i in range(1,5):
+                    newOption = input('Enter the new option {}: '.format(i))
+                    options.append(newOption)
+                    print(options)
+            except ValueError:
+                adminModifyQuestion(localrowid, questionNumber, questionid)
+            print(options)
+            DBcom.UserDB.update('questions', 'options', 'r', questionid, [options])
             print('Option successfully modified')
-            adminModifyQuestion(localrowid, questionNumber, questionid)
+            listQuestionPool(localrowid, questionid)
         elif modifyChoice == 3:
+            print(correctAnswer.split('_')[2])
             print('What is the new correct answer?')
-            newCorrectAnswer = input('> ')
-            UserDB.update('questions', 'correctAnswers', 'r', questionid, newCorrectAnswer)
-            print('Correct Answer successfully modified')
-    adminModifyQuestion(localrowid, questionNumber, questionid)
+            questionid = question.split('_')[0]
+            try:
+                print('<Enter> to go back')
+                newCorrectAnswer = input('What is the correct answer?: ')
+            except ValueError:
+                adminModifyQuestion(localrowid, questionNumber, questionid)
+            
+            if newCorrectAnswer not in options:
+                print('Error, the correct answer is not in the options...')
+                print('Answer not changed.')
+                adminModifyQuestion(localrowid, questionNumber, questionid)
+            else:
+                DBcom.UserDB.update('questions', 'correctAnswers', 'r', questionid, newCorrectAnswer)
+                print('Correct answer successfully modified')
+                listQuestionPool(localrowid, questionid)
+    listQuestionPool(localrowid, questionid)
 
-
+#userMenu
+def doUserQuestions(localrowid, questionid, userid):
+    print(userid)
+    userid = DBcom.UserDB.find('users', 'username', 'id', 'raw', localrowid)
+    print(userid)
+    #userid = userid.split('_')[2]
+    userid = base64.b64decode(userid[0].split('_')[2]).decode('utf-8')
+    username = DBcom.UserDB.find('users', 'username', 'id', 'id', localrowid)
+    print(username)
+    print(userid)
+    print('+==================================+\n')
+    print('User Question Menu...')
+    print('UserID: {}'.format(userid))
+    print('+==================================+\n')
+    print('1. List Question Pool')
+    print('2. Take Quiz')
+    print('\nPress <Enter> to go back to login page')
+    print('(You will be logged out)')
+    print('+==================================+\n')
+    try:
+        userChoice = int(input('> '))
+    except ValueError:
+        menu(localrowid)
+    if userChoice == 1:
+        listQuestionPool(localrowid, questionid)
+    elif userChoice == 2:
+        #takeQuiz(localrowid, questionid)
+        pass
+    elif userChoice == 1008:
+        try:
+            try:
+                if aclchecker(username, 5) == True:
+                    print('5. Admin Menu')
+            except:
+                #just ignore because the user probably not logged in
+                pass
+        except ValueError:
+            os._exit(0)
+        print('\n<ENTER> to Exit')
+    elif userChoice == 5:
+        if aclchecker(userid, 5) == True:
+            adminMenu(localrowid)
+        else:
+            print('You do not have access to this menu')
+            menu(localrowid)
+    else:
+        print('Invalid choice...')
+        doUserQuestions(localrowid, questionid, userid)
 
 #menu()
-adminMenu('85324259')
+#adminMenu('85324259')
+#doUserQuestions('85324259', '', '85324259')
+menu()
