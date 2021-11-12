@@ -14,19 +14,19 @@ import uuid
 import glob
 import shutil
 import DBcom
-def aclchecker(rowid, aclcheck, username=''):
-    rowid = DBcom.UserDB.find('users', 'username', 'data', 'id', username)
-    aclraw = DBcom.UserDB.find('users', 'acl', 'id', 'raw', rowid)
+def aclchecker(localrowid, aclcheck):
+    #rowid = DBcom.UserDB.find('users', 'username', 'data', 'id', username)
+    aclraw = DBcom.UserDB.find('users', 'acl', 'id', 'raw', localrowid)
     print(aclraw)
-    try:
-        acl = str(base64.b64decode(aclraw[0].split('_')[2]))[1:]
-        #print(acl+'1')
-        if acl[aclcheck] == '1':
-            return True
-        else:
-            return False
-    except:
+    print(localrowid)
+
+    acl = str(base64.b64decode(aclraw[localrowid].split('_')[2]))[1:]
+    print(acl)
+    if acl[aclcheck] == '1':
+        return True
+    else:
         return False
+    
 
 def adminMenu(localrowid):
     print('Welcome to the admin menu')
@@ -77,6 +77,15 @@ def doAdminUserEditData(userid,column, value):
 
     doAdminUserEditList(userid)
 
+def doAdminUserDelData(userid):
+    DBcom.UserDB.delete('users', 'username',userid)
+    DBcom.UserDB.delete('users', 'password',userid)
+    DBcom.UserDB.delete('users', 'email', userid)
+    DBcom.UserDB.delete('users', 'acl', userid)
+    DBcom.UserDB.delete('users', 'otp', userid)
+
+    doAdminUserDelData(userid)
+
 def doAdminUserEditList(userid):
     userinfo = DBcom.UserDB.find('users', 'username', 'id', 'raw', userid)
     acl = DBcom.UserDB.find('users', 'acl', 'id', 'raw', userid)
@@ -93,15 +102,19 @@ def doAdminUserEditList(userid):
     print('3. email:{}'.format(email))
     print('4. acl:{}'.format(acl))
     print('5. otp:{}'.format(otp))
+    print('6. DELETE USER')
     print('\n<ENTER> to go Back')
     try:
         choice = int(input('Please enter your choice [1-5]: '))
 
-        if choice == 6:
+        if choice == 7:
             doAdminListUsers(userid)
+        elif choice == 6:
+            allusers = DBcom.UserDB.find('users', 'username', 'id', 'raw','')
+            rowid = allusers[choice-1].split('_')[0]
+            doAdminUserDelData(rowid, 6)
         else:
             changeTo = input('Please enter the new value: ')
-            changeTo = changeTo.encode('utf-8')
 
             if changeTo == '':
                 doAdminListUsers(userid)
@@ -156,23 +169,14 @@ def doAdminQuestions(rowid, questionid):
 
     pass
 
-
-def menu(localrowid=hash(uuid.uuid4())):
+####################
+def menu(localrowid):
     print('\n\n+==================================+')
     print('Welcome to the The quiz')
     print('+==================================+')    
     print('1. Login')
     print('2. Register')
     print('3. Forget password')
-    try:
-        try:
-            if aclchecker(localrowid, 5) == True:
-                print('5. Admin Menu')
-        except:
-            #just ignore because the user probably not logged in
-            pass
-    except ValueError:
-        os._exit(0)
     print('\n<ENTER> to Exit')
 
 
@@ -186,12 +190,6 @@ def menu(localrowid=hash(uuid.uuid4())):
             forgetPassword(localrowid)
         elif choice == 1008:
             registerUser(localrowid,"admin",'11111')
-        elif choice == 5:
-            if aclchecker(localrowid,5) == True:
-                adminMenu(localrowid)
-            else:
-                print('You do not have access to this menu')
-                menu(localrowid)
         else:
             menu(localrowid)
     except ValueError:
@@ -549,28 +547,28 @@ def doUserQuestions(localrowid, questionid, userid):
     elif userChoice == 2:
         #takeQuiz(localrowid, questionid)
         pass
-    elif userChoice == 1008:
-        try:
-            try:
-                if aclchecker(username, 5) == True:
-                    print('5. Admin Menu')
-            except:
-                #just ignore because the user probably not logged in
-                pass
-        except ValueError:
-            os._exit(0)
-        print('\n<ENTER> to Exit')
     elif userChoice == 5:
-        if aclchecker(userid, 5) == True:
-            adminMenu(localrowid)
-        else:
-            print('You do not have access to this menu')
-            menu(localrowid)
+        try:
+            if aclchecker(localrowid, 5) == True:
+                adminMenu(localrowid)
+            else:
+                print('You do not have access to this menu')
+                menu(localrowid)
+        except ValueError:
+            pass
     else:
         print('Invalid choice...')
         doUserQuestions(localrowid, questionid, userid)
+    #try:
+        #try:
+        #    if aclchecker(username, 5) == True:
+        #            print('5. Admin Menu')
+       # except:
+     #          #just ignore because the user probably not logged in
+     #       pass
+   # except ValueError:
+    
 
-#menu()
 #adminMenu('85324259')
 #doUserQuestions('85324259', '', '85324259')
 menu()
