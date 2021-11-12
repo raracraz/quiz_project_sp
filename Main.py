@@ -1,11 +1,39 @@
 import os
-import stdLibv7
+import stdLibv7 
 import uuid
 import re
+import hashlib
 import base64
-global dataUser
+global rowid, username, loggedin_rowid
 # function to show the main menu for the quiz app 
 #let the user choose to login, register, forget password and exit
+rowid = hash(uuid.uuid4())
+loggedin_rowid = rowid
+stdLibv7.menu(rowid)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 '''
 def menu():
     rowid = hash(uuid.uuid4())

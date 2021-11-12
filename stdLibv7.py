@@ -571,4 +571,3 @@ def doUserQuestions(localrowid, questionid, userid):
 
 #adminMenu('85324259')
 #doUserQuestions('85324259', '', '85324259')
-menu()
