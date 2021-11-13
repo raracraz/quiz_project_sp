@@ -1,10 +1,3 @@
-# +==========================================================
-# StdLib
-# version 0.1109.1729
-# last update: 2021-11-11
-# created by: Crazzz
-# +==========================================================
-
 import os
 import re
 import base64
@@ -14,19 +7,274 @@ import uuid
 import glob
 import shutil
 import DBcom
+#purpose of stdLibv7 is to make stdLibv7.py more organized
+localrowid = hash(uuid.uuid4())
+def menu(localrowid):
+    print('\n\n+==================================+')
+    print('Welcome to the The quiz')
+    print('+==================================+')    
+    print('1. Login')
+    print('2. Register')
+    print('3. Forget password')
+    print('\n<ENTER> to Exit')
+
+
+    try:
+        choice = int(input('Please enter your choice: '))
+        if choice == 1:
+            login(localrowid)
+        elif choice == 2:
+            registerUser(localrowid,"normal")
+        elif choice == 3:
+            forgetPassword(localrowid)
+        elif choice == 1008:
+            registerUser(localrowid,"admin",'11111')
+        else:
+            menu(localrowid)
+    except ValueError:
+        os._exit(0)
+    menu(localrowid)
+
 def aclchecker(localrowid, aclcheck):
     #rowid = DBcom.UserDB.find('users', 'username', 'data', 'id', username)
     aclraw = DBcom.UserDB.find('users', 'acl', 'id', 'raw', localrowid)
     print(aclraw)
     print(localrowid)
 
-    acl = str(base64.b64decode(aclraw[localrowid].split('_')[2]))[1:]
+    acl = str(base64.b64decode(aclraw[0].split('_')[2]))[1:]
     print(acl)
     if acl[aclcheck] == '1':
         return True
     else:
         return False
+
+#############################################################################
+#                           Part of register()                              #
+#############################################################################
+def generateOTP():
+    #get a random number then hash it to 8 digits
+    randomNumber = os.urandom(16)
+    randomNumber = abs(hash(randomNumber) % (10 ** 8))
+    return randomNumber
+
+def registerUser(rowid,fromwhere, acl = '00000'):
+    username_pass = False
+    password_pass = False
+    email_pass = False
+    #acl = '00000'
+    #acl = '11111' #to create admin user
+    #regenerate rowid to ensure each record is unique
     
+    localrowid = str(abs(hash(os.urandom(16)) % (10 ** 8)))
+
+    if fromwhere == 'admin':
+        print('+==================================+')
+        print('Create User / Admin User Menu')
+        print('+==================================+')
+    else:
+        print('+==================================+')
+        print('Create User Menu')
+        print('+==================================+')        
+
+    username = str(input('Please enter your username: '))
+
+    #if username is empty go back
+    if username == '':
+        if fromwhere == 'admin':
+            doAdminUser(localrowid)
+        else:
+            menu(localrowid)
+
+    password = str(input('Please enter your password: '))
+    email = str(input('Please enter your email: '))
+    otp = str(generateOTP())
+
+    #first let's check if username is already taken
+    if len(DBcom.UserDB.find('users', 'username', 'data', 'bool', username)) > 0:
+        print('Username already taken')
+    else:
+        username_pass = True
+
+    #now let's check if email is a valid email
+    if re.match(r"[^@]+@[^@]+\.[^@]+", email) == None:
+        print('Email is not valid')
+        email_pass = False
+    else:
+        email_pass = True
+
+    #now let's check if email is already taken
+    if len(DBcom.UserDB.find('users', 'email', 'data', 'bool', email)) > 0:
+        print('Email already taken')
+        email_pass = False
+    else:
+        email_pass = True
+
+
+    if username_pass == True and email_pass == True:
+        try:
+            DBcom.UserDB.create('users', 'acl', 's', localrowid, acl)
+            DBcom.UserDB.create('users', 'username', 's', localrowid, username)
+            DBcom.UserDB.create('users', 'password', 's', localrowid, password)
+            DBcom.UserDB.create('users', 'otp', 's', localrowid, str(otp))
+            DBcom.UserDB.create('users', 'email', 's', localrowid, email)
+            print('+==================================+')
+            print('Registration successful,\nreturn to the menu to login!\n')
+            print('your email is {}, recovery OTP is {}'.format(email,otp))
+            print('+==================================+\n')
+            if fromwhere == "admin":
+                doAdminUser(rowid)
+            else:
+                menu(rowid)
+        except:
+            print('Error creating user')
+            registerUser(localrowid,fromwhere)
+    else:
+        registerUser(localrowid,fromwhere)
+
+#############################################################################
+#                           Part of forgetPassword()                        #
+#############################################################################
+
+def forgetPassword(localrowid):
+    email = str(input('Please enter your email: '))
+    #check if email is valid
+
+    if email == '':
+        menu(localrowid)
+
+    if re.match(r"[^@]+@[^@]+\.[^@]+", email) == None:
+        print('Email is not valid')
+        forgetPassword(localrowid)
+    else:
+        localrowid = DBcom.UserDB.find('users', 'email', 'data', 'id', email)[0]
+        print(localrowid)
+        if len(localrowid) != '':
+            #try:
+            #password = str(base64.b64decode(DBcom.UserDB.find('users', 'password', 'id','raw', localrowid[0])[0].split('_')[2]))[1:]
+            password = str(DBcom.UserDB.find('users', 'password', 'id','raw', localrowid)).split('_')[2][0:-2]
+            print(password)
+            print('+==================================+\n')
+            print('We have sent the password {} to your Email {}'.format(password,email))
+            print('+==================================+\n')
+            menu(localrowid)
+            #except:
+            #    forgetPassword(rowid)
+        else:
+            print('Email not found')
+            forgetPassword(localrowid)
+
+#############################################################################
+#                           Part of login()                                 #
+#############################################################################
+
+def login(localrowid):
+    results = []
+    username = ""
+    password = ""
+    username_pass = False
+    password_pass = False
+        
+    try:
+        username = str(input('Please enter your username: '))
+    
+        #if there is no username entered.
+        if username == '':
+            print('+==================================+\n')
+            print('Login terminated.!\n')
+            print('+==================================+\n')
+            menu(localrowid)
+
+        try:
+            password = str(input('Please enter your password: '))
+        except ValueError:
+            print('Please enter a valid password')
+            login(localrowid)
+
+        rowid = DBcom.UserDB.find('users', 'username', 'data', 'id', username)
+        username_pass = DBcom.UserDB.find('users', 'username', 'data','bool', username)
+        password_pass = DBcom.UserDB.find('users', 'password', 'data','bool', password)
+        userid = DBcom.UserDB.find('users', 'username', 'id', 'id', username)
+        print(localrowid)
+        print(userid)
+        print(rowid)
+        localrowid = rowid
+
+        print('username:[{}/{}]/password:[{}/{}]/loggedin_rowid:{}'.format(username,username_pass,password,password_pass,localrowid))
+
+        try:
+            if len(username_pass) > 0 and len(password_pass) > 0 and localrowid != '':
+                print('=============================')
+                print('Login successful {}/{}'.format(username,localrowid))
+                print('=============================')
+                doUserQuestions(localrowid,'' , userid)
+            else :
+                print('a. Incorrect username or password')
+                login(localrowid)
+        except ValueError:
+            print('b. Incorrect username or password')
+            login(localrowid)
+
+    except ValueError:
+        login(localrowid)
+
+#############################################################################
+#                           After Logged in                                 #
+#############################################################################
+
+def doUserQuestions(localrowid, questionid, userid):
+    print(userid)
+    userid = DBcom.UserDB.find('users', 'username', 'id', 'raw', localrowid)
+    print(userid)
+    #userid = userid.split('_')[2]
+    userid = base64.b64decode(userid[0].split('_')[2]).decode('utf-8')
+    username = DBcom.UserDB.find('users', 'username', 'id', 'id', localrowid)
+    print(username)
+    print(userid)
+    print('+==================================+\n')
+    print('User Question Menu...')
+    print('UserID: {}'.format(userid))
+    print('+==================================+\n')
+    print('1. Take Quiz')
+    print('2. User results')
+    if aclchecker(localrowid, 4) == True:
+        print('5. Admin Menu')
+    print('\nPress <Enter> to go back to login page')
+    print('(You will be logged out)')
+    print('+==================================+\n')
+    try:
+        userChoice = int(input('> '))
+    except ValueError:
+        menu(localrowid)
+    if userChoice == 1:
+        #takeQuiz(localrowid, questionid)
+        pass
+    elif userChoice == 2:
+        #userResults(localrowid, questionid)
+        pass
+    elif userChoice == 5:
+        try:
+            if aclchecker(localrowid, 4) == True:
+                adminMenu(localrowid)
+            else:
+                print('You do not have access to this menu')
+                menu(localrowid)
+        except ValueError:
+            pass
+    else:
+        print('Invalid choice...')
+        doUserQuestions(localrowid, questionid, userid)
+    #try:
+        #try:
+        #    if aclchecker(username, 5) == True:
+        #            print('5. Admin Menu')
+       # except:
+     #          #just ignore because the user probably not logged in
+     #       pass
+   # except ValueError:
+
+#############################################################################
+#                           Admin Menu + features                           #
+#############################################################################
 
 def adminMenu(localrowid):
     print('Welcome to the admin menu')
@@ -123,9 +371,6 @@ def doAdminUserEditList(userid):
 
     except ValueError:
         doAdminListUsers(userid)
-    
-####################################################################################################################################
-
 
 def doAdminListUsers(rowid):
     userlist = []
@@ -149,9 +394,6 @@ def doAdminListUsers(rowid):
     else:
         rowid = allusers[choice-1].split('_')[0]
         doAdminUserEditList(rowid)
-    
-
-    
 
 def doAdminQuestions(rowid, questionid):
     print('Welcome to the question admin menu')
@@ -169,203 +411,6 @@ def doAdminQuestions(rowid, questionid):
     else:
         pass
 
-####################
-def menu(localrowid):
-    print('\n\n+==================================+')
-    print('Welcome to the The quiz')
-    print('+==================================+')    
-    print('1. Login')
-    print('2. Register')
-    print('3. Forget password')
-    print('\n<ENTER> to Exit')
-
-
-    try:
-        choice = int(input('Please enter your choice: '))
-        if choice == 1:
-            login(localrowid)
-        elif choice == 2:
-            registerUser(localrowid,"normal")
-        elif choice == 3:
-            forgetPassword(localrowid)
-        elif choice == 1008:
-            registerUser(localrowid,"admin",'11111')
-        else:
-            menu(localrowid)
-    except ValueError:
-        os._exit(0)
-    menu()
-
-def generateOTP():
-    #get a random number then hash it to 8 digits
-    randomNumber = os.urandom(16)
-    randomNumber = abs(hash(randomNumber) % (10 ** 8))
-    return randomNumber
-
-def registerUser(rowid,fromwhere, acl = '00000'):
-    username_pass = False
-    password_pass = False
-    email_pass = False
-    #acl = '00000'
-    #acl = '11111' #to create admin user
-    #regenerate rowid to ensure each record is unique
-    
-    localrowid = str(abs(hash(os.urandom(16)) % (10 ** 8)))
-
-    if fromwhere == 'admin':
-        print('+==================================+')
-        print('Create User / Admin User Menu')
-        print('+==================================+')
-    else:
-        print('+==================================+')
-        print('Create User Menu')
-        print('+==================================+')        
-
-    username = str(input('Please enter your username: '))
-
-    #if username is empty go back
-    if username == '':
-        if fromwhere == 'admin':
-            doAdminUser(localrowid)
-        else:
-            menu(localrowid)
-
-    password = str(input('Please enter your password: '))
-    email = str(input('Please enter your email: '))
-    otp = str(generateOTP())
-
-    #first let's check if username is already taken
-    if len(DBcom.UserDB.find('users', 'username', 'data', 'bool', username)) > 0:
-        print('Username already taken')
-    else:
-        username_pass = True
-
-    #now let's check if email is a valid email
-    if re.match(r"[^@]+@[^@]+\.[^@]+", email) == None:
-        print('Email is not valid')
-        email_pass = False
-    else:
-        email_pass = True
-
-    #now let's check if email is already taken
-    if len(DBcom.UserDB.find('users', 'email', 'data', 'bool', email)) > 0:
-        print('Email already taken')
-        email_pass = False
-    else:
-        email_pass = True
-
-
-    if username_pass == True and email_pass == True:
-        try:
-            DBcom.UserDB.create('users', 'acl', 's', localrowid, acl)
-            DBcom.UserDB.create('users', 'username', 's', localrowid, username)
-            DBcom.UserDB.create('users', 'password', 's', localrowid, password)
-            DBcom.UserDB.create('users', 'otp', 's', localrowid, str(otp))
-            DBcom.UserDB.create('users', 'email', 's', localrowid, email)
-            print('+==================================+')
-            print('Registration successful,\nreturn to the menu to login!\n')
-            print('your email is {}, recovery OTP is {}'.format(email,otp))
-            print('+==================================+\n')
-            if fromwhere == "admin":
-                doAdminUser(rowid)
-            else:
-                menu(rowid)
-        except:
-            print('Error creating user')
-            registerUser(localrowid,fromwhere)
-    else:
-        registerUser(localrowid,fromwhere)
-
-#allows the the user to take a quiz
-def doQuestions(localrowid):
-
-    pass
-
-#function to login using DBcom find function with data
-def login(localrowid):
-    results = []
-    username = ""
-    password = ""
-    username_pass = False
-    password_pass = False
-        
-    try:
-        username = str(input('Please enter your username: '))
-    
-        #if there is no username entered.
-        if username == '':
-            print('+==================================+\n')
-            print('Login terminated.!\n')
-            print('+==================================+\n')
-            menu(localrowid)
-
-        try:
-            password = str(input('Please enter your password: '))
-        except ValueError:
-            print('Please enter a valid password')
-            login(localrowid)
-
-        rowid = DBcom.UserDB.find('users', 'username', 'data', 'id', username)
-        username_pass = DBcom.UserDB.find('users', 'username', 'data','bool', username)
-        password_pass = DBcom.UserDB.find('users', 'password', 'data','bool', password)
-        userid = DBcom.UserDB.find('users', 'username', 'id', 'id', username)
-        print(localrowid)
-        print(userid)
-        print(rowid)
-        localrowid = rowid
-
-        print('username:[{}/{}]/password:[{}/{}]/loggedin_rowid:{}'.format(username,username_pass,password,password_pass,localrowid))
-
-        try:
-            if len(username_pass) > 0 and len(password_pass) > 0 and localrowid != '':
-                print('=============================')
-                print('Login successful {}/{}'.format(username,localrowid))
-                print('=============================')
-                doUserQuestions(localrowid,'' , userid)
-            else :
-                print('a. Incorrect username or password')
-                login(localrowid)
-        except ValueError:
-            print('b. Incorrect username or password')
-            login(localrowid)
-
-    except ValueError:
-        login(localrowid)
-
-#function to forget password using DBcom find function
-
-def forgetPassword(localrowid):
-    email = str(input('Please enter your email: '))
-    #check if email is valid
-
-    if email == '':
-        menu(localrowid)
-
-    if re.match(r"[^@]+@[^@]+\.[^@]+", email) == None:
-        print('Email is not valid')
-        forgetPassword(localrowid)
-    else:
-        localrowid = DBcom.UserDB.find('users', 'email', 'data', 'id', email)[0]
-        print(localrowid)
-        if len(localrowid) != '':
-            #try:
-            #password = str(base64.b64decode(DBcom.UserDB.find('users', 'password', 'id','raw', localrowid[0])[0].split('_')[2]))[1:]
-            password = str(DBcom.UserDB.find('users', 'password', 'id','raw', localrowid)).split('_')[2][0:-2]
-            print(password)
-            print('+==================================+\n')
-            print('We have sent the password {} to your Email {}'.format(password,email))
-            print('+==================================+\n')
-            menu(localrowid)
-            #except:
-            #    forgetPassword(rowid)
-        else:
-            print('Email not found')
-            forgetPassword(localrowid)
-
-#start of main quiz functions
-
-#function to use UserDB.create() to create the question pool with different rowids only if acl is 11111.
-#function to use UserDB.create() to create the question pool with different rowids only if acl is 11111.
 def adminCreateQuestionPool(localrowid):
     print('+==================================+\n')
     print('Creating Question Pool...')
@@ -414,7 +459,6 @@ def adminCreateQuestionPool(localrowid):
         print('+==================================+\n')
     adminMenu(localrowid)
     
-##
 def listQuestionPool(localrowid, questionid):
     print('+==================================+\n')
     print('Listing Question Pool...')
@@ -437,7 +481,6 @@ def listQuestionPool(localrowid, questionid):
         adminModifyQuestion(localrowid, questionNumber, questionid)
     except ValueError:
         doAdminQuestions(localrowid, questionid)
-
 
 def adminModifyQuestion(localrowid, questionNumber, questionid):
     print('+==================================+\n')
@@ -519,55 +562,4 @@ def adminModifyQuestion(localrowid, questionNumber, questionid):
                 listQuestionPool(localrowid, questionid)
     listQuestionPool(localrowid, questionid)
 
-#userMenu
-def doUserQuestions(localrowid, questionid, userid):
-    print(userid)
-    userid = DBcom.UserDB.find('users', 'username', 'id', 'raw', localrowid)
-    print(userid)
-    #userid = userid.split('_')[2]
-    userid = base64.b64decode(userid[0].split('_')[2]).decode('utf-8')
-    username = DBcom.UserDB.find('users', 'username', 'id', 'id', localrowid)
-    print(username)
-    print(userid)
-    print('+==================================+\n')
-    print('User Question Menu...')
-    print('UserID: {}'.format(userid))
-    print('+==================================+\n')
-    print('1. List Question Pool')
-    print('2. Take Quiz')
-    print('\nPress <Enter> to go back to login page')
-    print('(You will be logged out)')
-    print('+==================================+\n')
-    try:
-        userChoice = int(input('> '))
-    except ValueError:
-        menu(localrowid)
-    if userChoice == 1:
-        listQuestionPool(localrowid, questionid)
-    elif userChoice == 2:
-        #takeQuiz(localrowid, questionid)
-        pass
-    elif userChoice == 5:
-        try:
-            if aclchecker(localrowid, 5) == True:
-                adminMenu(localrowid)
-            else:
-                print('You do not have access to this menu')
-                menu(localrowid)
-        except ValueError:
-            pass
-    else:
-        print('Invalid choice...')
-        doUserQuestions(localrowid, questionid, userid)
-    #try:
-        #try:
-        #    if aclchecker(username, 5) == True:
-        #            print('5. Admin Menu')
-       # except:
-     #          #just ignore because the user probably not logged in
-     #       pass
-   # except ValueError:
-    
-
-#adminMenu('85324259')
-#doUserQuestions('85324259', '', '85324259')
+menu(localrowid)

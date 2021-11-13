@@ -24,16 +24,6 @@ stdLibv7.menu(rowid)
 
 
 
-
-
-
-
-
-
-
-
-
-
 '''
 def menu():
     rowid = hash(uuid.uuid4())
