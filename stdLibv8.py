@@ -8,7 +8,6 @@ import glob
 import shutil
 import DBcom
 #purpose of stdLibv7 is to make stdLibv7.py more organized
-localrowid = hash(uuid.uuid4())
 def menu(localrowid):
     print('\n\n+==================================+')
     print('Welcome to the The quiz')
@@ -108,8 +107,6 @@ def registerUser(rowid,fromwhere, acl = '00000'):
         email_pass = False
     else:
         email_pass = True
-
-
     if username_pass == True and email_pass == True:
         try:
             DBcom.UserDB.create('users', 'acl', 's', localrowid, acl)
@@ -194,9 +191,9 @@ def login(localrowid):
         username_pass = DBcom.UserDB.find('users', 'username', 'data','bool', username)
         password_pass = DBcom.UserDB.find('users', 'password', 'data','bool', password)
         userid = DBcom.UserDB.find('users', 'username', 'id', 'id', username)
-        print(localrowid)
-        print(userid)
-        print(rowid)
+        #print(localrowid)
+        #print(userid)
+        #print(rowid)
         localrowid = rowid
 
         print('username:[{}/{}]/password:[{}/{}]/loggedin_rowid:{}'.format(username,username_pass,password,password_pass,localrowid))
@@ -206,7 +203,7 @@ def login(localrowid):
                 print('=============================')
                 print('Login successful {}/{}'.format(username,localrowid))
                 print('=============================')
-                doUserQuestions(localrowid,'' , userid)
+                doUserQuestions(localrowid, username)
             else :
                 print('a. Incorrect username or password')
                 login(localrowid)
@@ -221,22 +218,22 @@ def login(localrowid):
 #                           After Logged in                                 #
 #############################################################################
 
-def doUserQuestions(localrowid, questionid, userid):
-    print(userid)
-    userid = DBcom.UserDB.find('users', 'username', 'id', 'raw', localrowid)
-    print(userid)
+def doUserQuestions(localrowid, username):
+    #print(userid)
+    #userid = DBcom.UserDB.find('users', 'username', 'id', 'raw', localrowid)
+    #print(userid)
     #userid = userid.split('_')[2]
-    userid = base64.b64decode(userid[0].split('_')[2]).decode('utf-8')
-    username = DBcom.UserDB.find('users', 'username', 'id', 'id', localrowid)
-    print(username)
-    print(userid)
+    #userid = base64.b64decode(userid[0].split('_')[2]).decode('utf-8')
+    #username = DBcom.UserDB.find('users', 'username', 'id', 'id', localrowid)
+    #print(localrowid)
+    #print(userid)
     print('+==================================+\n')
     print('User Question Menu...')
-    print('UserID: {}'.format(userid))
+    print('UserID: {}'.format(username))
     print('+==================================+\n')
     print('1. Take Quiz')
     print('2. User results')
-    if aclchecker(localrowid, 4) == True:
+    if aclchecker(localrowid[0], 4) == True:
         print('5. Admin Menu')
     print('\nPress <Enter> to go back to login page')
     print('(You will be logged out)')
@@ -246,15 +243,15 @@ def doUserQuestions(localrowid, questionid, userid):
     except ValueError:
         menu(localrowid)
     if userChoice == 1:
-        #takeQuiz(localrowid, questionid)
+        takeQuiz(localrowid, username)
         pass
     elif userChoice == 2:
-        #userResults(localrowid, questionid)
+        #userResults(localrowid)
         pass
     elif userChoice == 5:
         try:
-            if aclchecker(localrowid, 4) == True:
-                adminMenu(localrowid)
+            if aclchecker(localrowid[0], 4) == True:
+                adminMenu(localrowid, username)
             else:
                 print('You do not have access to this menu')
                 menu(localrowid)
@@ -262,7 +259,7 @@ def doUserQuestions(localrowid, questionid, userid):
             pass
     else:
         print('Invalid choice...')
-        doUserQuestions(localrowid, questionid, userid)
+        doUserQuestions(localrowid, username)
     #try:
         #try:
         #    if aclchecker(username, 5) == True:
@@ -276,7 +273,7 @@ def doUserQuestions(localrowid, questionid, userid):
 #                           Admin Menu + features                           #
 #############################################################################
 
-def adminMenu(localrowid):
+def adminMenu(localrowid, username):
     print('Welcome to the admin menu')
     print('1. Users')
     print('2. Questions')
@@ -284,7 +281,7 @@ def adminMenu(localrowid):
     try:
         choice = int(input('Please enter your choice: '))
     except ValueError:
-        doUserQuestions(localrowid)
+        doUserQuestions(localrowid, username)
     if choice == 1:
         doAdminUser(localrowid)
     elif choice == 2:
@@ -307,11 +304,11 @@ def doAdminUser(localrowid):
     if choice == 1:
         registerUser(localrowid,"admin")
     elif choice == 2:
-        doAdminListUsers(localrowid)
+        doAdminListUsers(localrowid, rowid='')
     else:
         menu(localrowid)
 
-def doAdminUserEditData(userid,column, value):
+def doAdminUserEditData(userid, column, value, localrowid):
     if column == 1:
         DBcom.UserDB.update('users', 'username', 's',userid, value)
     elif column == 2:
@@ -323,24 +320,36 @@ def doAdminUserEditData(userid,column, value):
     elif column == 5:
         DBcom.UserDB.update('users', 'otp', 's',userid, value)
 
-    doAdminUserEditList(userid)
+    doAdminUserEditList(userid, localrowid)
 
-def doAdminUserDelData(userid):
-    DBcom.UserDB.delete('users', 'username',userid)
-    DBcom.UserDB.delete('users', 'password',userid)
-    DBcom.UserDB.delete('users', 'email', userid)
-    DBcom.UserDB.delete('users', 'acl', userid)
-    DBcom.UserDB.delete('users', 'otp', userid)
+def doAdminUserDelData(userid, localrowid):
+    #print(userid)
+    print('Are you sure you want to delete this user? [y/n]')
+    try:
+        choice = str(input('> '))
+        if choice == 'y':
+            DBcom.UserDB.deleteUser('users', 'username', userid)
+            DBcom.UserDB.deleteUser('users', 'password',userid)
+            DBcom.UserDB.deleteUser('users', 'email', userid)
+            DBcom.UserDB.deleteUser('users', 'acl', userid)
+            DBcom.UserDB.deleteUser('users', 'otp', userid)
+            print('Deleted file successfully')
+            menu(localrowid)
+        elif choice == 'n':
+            doAdminUserEditList(userid, localrowid)
+        else:
+            print('Invalid choice')
+            doAdminUserEditList(userid, localrowid)
+    except ValueError:
+        doAdminUserEditList(userid, localrowid)
 
-    doAdminUserDelData(userid)
-
-def doAdminUserEditList(userid):
-    userinfo = DBcom.UserDB.find('users', 'username', 'id', 'raw', userid)
+def doAdminUserEditList(userid, localrowid):
+    username = DBcom.UserDB.find('users', 'username', 'id', 'raw', userid)
     acl = DBcom.UserDB.find('users', 'acl', 'id', 'raw', userid)
     password = DBcom.UserDB.find('users', 'password', 'id', 'raw', userid)
     otp = DBcom.UserDB.find('users', 'otp', 'id', 'raw', userid)
     email = DBcom.UserDB.find('users', 'email', 'id', 'raw', userid)
-    username = str(base64.b64decode(userinfo[0].split('_')[2]))[2:-1]
+    username = str(base64.b64decode(username[0].split('_')[2]))[2:-1]
     password = str(base64.b64decode(password[0].split('_')[2]))[2:-1]
     otp = str(base64.b64decode(otp[0].split('_')[2]))[2:-1]
     email = str(base64.b64decode(email[0].split('_')[2]))[2:-1]
@@ -353,26 +362,29 @@ def doAdminUserEditList(userid):
     print('6. DELETE USER')
     print('\n<ENTER> to go Back')
     try:
-        choice = int(input('Please enter your choice [1-5]: '))
+        choice = int(input('Please enter your choice [1-6]: '))
 
         if choice == 7:
-            doAdminListUsers(userid)
+            print(localrowid)
+            print(userid)
+            doAdminListUsers(localrowid, userid)
         elif choice == 6:
-            allusers = DBcom.UserDB.find('users', 'username', 'id', 'raw','')
-            rowid = allusers[choice-1].split('_')[0]
-            doAdminUserDelData(rowid, 6)
+            #print(localrowid)
+            #print(allusers)
+            #rowid = allusers[choice-1].split('_')[0]
+            #print(rowid)
+            doAdminUserDelData(userid, localrowid)
         else:
             changeTo = input('Please enter the new value: ')
 
             if changeTo == '':
-                doAdminListUsers(userid)
+                doAdminListUsers(localrowid, userid)
             else:
-                doAdminUserEditData(userid, choice, changeTo)
-
+                doAdminUserEditData(userid, choice, changeTo, localrowid)
     except ValueError:
-        doAdminListUsers(userid)
+        doAdminListUsers(localrowid, userid)
 
-def doAdminListUsers(rowid):
+def doAdminListUsers(localrowid, rowid=''):
     userlist = []
     usercount = 1
     allusers = DBcom.UserDB.find('users', 'username', 'id', 'raw','')
@@ -393,7 +405,7 @@ def doAdminListUsers(rowid):
         doAdminUser(rowid)
     else:
         rowid = allusers[choice-1].split('_')[0]
-        doAdminUserEditList(rowid)
+        doAdminUserEditList(rowid, localrowid)
 
 def doAdminQuestions(rowid, questionid):
     print('Welcome to the question admin menu')
@@ -403,7 +415,7 @@ def doAdminQuestions(rowid, questionid):
     try:
         choice = int(input('Please enter your choice: '))
     except ValueError:
-        adminMenu(rowid)
+        adminMenu(rowid, questionid)
     if choice == 1:
         adminCreateQuestionPool(rowid)
     elif choice == 2:
@@ -562,4 +574,60 @@ def adminModifyQuestion(localrowid, questionNumber, questionid):
                 listQuestionPool(localrowid, questionid)
     listQuestionPool(localrowid, questionid)
 
-menu(localrowid)
+##############################################################################
+#                               TakeQuiz                                     #
+##############################################################################
+def takeQuiz(localrowid, username):
+    print('+==================================+\n')
+    print('Taking Quiz...')
+    print('+==================================+\n')
+    #list the question pool
+    resultList = []
+    allQns = DBcom.UserDB.find('questions', 'questions', 'id', 'raw','')
+    #print(allQns)
+    alloptions = DBcom.UserDB.find('questions', 'options', 'id', 'raw','')
+    allQnscnt = len(allQns)
+    allQnsnum = 0
+    allOptnum = len(alloptions)
+    Qnscnt = 1
+    print(username)
+    for allQnscnt in allQns:
+        print("QuestionID: {}".format(Qnscnt))
+        print("Question: {}".format(str(allQnscnt.split('_')[2])))
+        for allOptnum in alloptions:
+            print("Options: {}".format(str(allOptnum.split('_')[2][2:-2])))
+            print('+==================================+')
+            print("What is the correct Answer?: ")
+            result = str(input('> '))
+            resultList.append(result)
+            print(allQnscnt)
+            Qnscnt = Qnscnt + 1
+        #print(resultList)
+    checkAnswer(localrowid, username, resultList)
+    #DBcom.UserDB.createQn('users', 'results', 's', localrowid, resultList)
+    print('+==================================+\n')
+    
+def checkAnswer(localrowid, username, resultList):
+    print('+==================================+\n')
+    print('Checking Answer...')
+    print('+==================================+\n')
+    resultList = ['298', '11']
+    correctNum = 0
+    totalQn = len(resultList)
+    modelAnsList = DBcom.UserDB.find('questions', 'correctAnswers', 'id', 'raw','')
+    #print(modelAnsList)
+    for i in range(len(modelAnsList)):
+        if modelAnsList[i].split('_')[2] == resultList[i]:
+            print('Correct!')
+            correctNum = correctNum + 1
+        else:
+            print('Incorrect!')
+    percnt = (correctNum/totalQn) * 100
+    print('User {}'.format(username))
+    print('Final score: {}'.format(percnt))
+    print('{}/{}'.format(correctNum, totalQn))
+    #add the date and time of the quiz to percnt
+    percnt = str(percnt) + '%'
+    DBcom.UserDB.createQn('users', 'results', 's', localrowid, percnt)
+    print('+==================================+\n')
+    
