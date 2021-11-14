@@ -1,5 +1,5 @@
 import os
-import stdLibv7 
+import stdLibv8
 import uuid
 import re
 import hashlib
@@ -9,7 +9,7 @@ global rowid, username, loggedin_rowid
 #let the user choose to login, register, forget password and exit
 rowid = hash(uuid.uuid4())
 loggedin_rowid = rowid
-stdLibv7.menu(rowid)
+stdLibv8.menu(rowid)
 
 
 

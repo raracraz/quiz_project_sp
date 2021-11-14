@@ -4,6 +4,7 @@ import hashlib
 import glob
 import shutil
 import re
+import stdLibv8
 
 class UserDB():
     def create(tableName, colName, colType, localrowid, data):
@@ -123,10 +124,9 @@ class UserDB():
             return False
         
     def deleteUser(tableName, colName, localrowid):
-        path = ('jsonPython/db/' + tableName + '/' + colName)
-        find_result = UserDB.find(tableName, colName, 'id', 'raw', localrowid)
-        print('found: '+find_result)
-        for file in find_result:
-            os.remove(path +'/'+ file)
-            print('Deleted\t' + file + '\tsuccessfully')
-            return True
+        
+      #  print(localrowid)
+        find_result = UserDB.find(tableName, colName, 'id', 'raw', localrowid[0])
+        path = ('jsonPython/db/' + tableName + '/' + colName + '/' + find_result[0])
+        os.remove(path)
+        
