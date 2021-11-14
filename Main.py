@@ -10,7 +10,7 @@ global rowid, username, loggedin_rowid
 rowid = hash(uuid.uuid4())
 loggedin_rowid = rowid
 #stdLibv8.menu(rowid)
-stdLibv8.checkAnswer(rowid, loggedin_rowid, resultList=[])
+stdLibv8.takeQuiz(rowid, username='craz')
 
 
 
