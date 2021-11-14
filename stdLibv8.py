@@ -590,18 +590,22 @@ def takeQuiz(localrowid, username):
     allQnsnum = 0
     allOptnum = len(alloptions)
     Qnscnt = 1
-    print(username)
-    for allQnscnt in allQns:
+    #print(allQns)
+    #print(alloptions)
+    #print(username)
+    for allQnscnt in allQns:  
+        print(allQnscnt)
         print("QuestionID: {}".format(Qnscnt))
         print("Question: {}".format(str(allQnscnt.split('_')[2])))
         for allOptnum in alloptions:
+            print(allOptnum)
             print("Options: {}".format(str(allOptnum.split('_')[2][2:-2])))
-            print('+==================================+')
-            print("What is the correct Answer?: ")
-            result = str(input('> '))
-            resultList.append(result)
-            print(allQnscnt)
-            Qnscnt = Qnscnt + 1
+        print('+==================================+')
+        print("What is the correct Answer?: ")
+        result = str(input('> '))
+        resultList.append(result)
+        print(allQnscnt)
+        Qnscnt = Qnscnt + 1
         #print(resultList)
     checkAnswer(localrowid, username, resultList)
     #DBcom.UserDB.createQn('users', 'results', 's', localrowid, resultList)
