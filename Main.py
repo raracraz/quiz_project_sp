@@ -9,7 +9,8 @@ global rowid, username, loggedin_rowid
 #let the user choose to login, register, forget password and exit
 rowid = hash(uuid.uuid4())
 loggedin_rowid = rowid
-stdLibv8.menu(rowid)
+#stdLibv8.menu(rowid)
+stdLibv8.checkAnswer(rowid, loggedin_rowid, resultList=[])
 
 
 

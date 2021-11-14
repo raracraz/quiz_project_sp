@@ -587,19 +587,47 @@ def takeQuiz(localrowid, username):
     #print(allQns)
     alloptions = DBcom.UserDB.find('questions', 'options', 'id', 'raw','')
     allQnscnt = len(allQns)
-    allQnsnum = len(allQns)
+    allQnsnum = 0
     allOptnum = len(alloptions)
     Qnscnt = 1
+    print(username)
     for allQnscnt in allQns:
         print("QuestionID: {}".format(Qnscnt))
-        print("Question: {}".format(str((allQnscnt.split('_')[2]))))
+        print("Question: {}".format(str(allQnscnt.split('_')[2])))
         for allOptnum in alloptions:
-            print("options: {}".format(str(allOptnum.split('_')[2][2:-2])))
+            print("Options: {}".format(str(allOptnum.split('_')[2][2:-2])))
+            print('+==================================+')
             print("What is the correct Answer?: ")
             result = str(input('> '))
-            resultList = resultList.append(result)
-            pass
-        Qnscnt = Qnscnt + 1
-    DBcom.UserDB.createQn('users', 'results', 's', localrowid, resultList)
+            resultList.append(result)
+            print(allQnscnt)
+            Qnscnt = Qnscnt + 1
+        #print(resultList)
+    checkAnswer(localrowid, username, resultList)
+    #DBcom.UserDB.createQn('users', 'results', 's', localrowid, resultList)
+    print('+==================================+\n')
+    
+def checkAnswer(localrowid, username, resultList):
+    print('+==================================+\n')
+    print('Checking Answer...')
+    print('+==================================+\n')
+    resultList = ['298', '11']
+    correctNum = 0
+    totalQn = len(resultList)
+    modelAnsList = DBcom.UserDB.find('questions', 'correctAnswers', 'id', 'raw','')
+    #print(modelAnsList)
+    for i in range(len(modelAnsList)):
+        if modelAnsList[i].split('_')[2] == resultList[i]:
+            print('Correct!')
+            correctNum = correctNum + 1
+        else:
+            print('Incorrect!')
+    percnt = (correctNum/totalQn) * 100
+    print('User {}'.format(username))
+    print('Final score: {}'.format(percnt))
+    print('{}/{}'.format(correctNum, totalQn))
+    #add the date and time of the quiz to percnt
+    percnt = str(percnt) + '%'
+    DBcom.UserDB.createQn('users', 'results', 's', localrowid, percnt)
     print('+==================================+\n')
     
