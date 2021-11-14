@@ -1,3 +1,4 @@
+from datetime import datetime
 import os
 import base64
 import hashlib
@@ -25,8 +26,9 @@ class UserDB():
         path = ('jsonPython/db/' + tableName + '/' + colName)
         os.makedirs(path, exist_ok=True)
         filename = str(localrowid) + '_' + str(colType) + '_' + str(data)[2:-1]
-        with open(path +'/'+ filename, 'w+') as f:
-            f.write(str(data))
+        date = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        with open(path+'/'+filename, 'w+') as f:
+            f.write(date+'_'+str(data))
         return localrowid
 
     def find(tableName, colName, searchPart, returnType, data):

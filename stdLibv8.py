@@ -618,16 +618,15 @@ def checkAnswer(localrowid, username, resultList):
     #print(modelAnsList)
     for i in range(len(modelAnsList)):
         if modelAnsList[i].split('_')[2] == resultList[i]:
-            print('Correct!')
+            print('Question {}. Correct!'.format(i+1))
             correctNum = correctNum + 1
         else:
-            print('Incorrect!')
+            print('Question {}. Incorrect!'.format(i+1))
     percnt = (correctNum/totalQn) * 100
-    print('User {}'.format(username))
+    print('User: {}'.format(username))
     print('Final score: {}'.format(percnt))
-    print('{}/{}'.format(correctNum, totalQn))
+    print('{}/{} questions correct.'.format(correctNum, totalQn))
     #add the date and time of the quiz to percnt
-    percnt = str(percnt) + '%'
     DBcom.UserDB.createQn('users', 'results', 's', localrowid, percnt)
     print('+==================================+\n')
     

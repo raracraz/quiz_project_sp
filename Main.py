@@ -24,7 +24,6 @@ stdLibv8.checkAnswer(rowid, loggedin_rowid, resultList=[])
 
 
 
-
 '''
 def menu():
     rowid = hash(uuid.uuid4())
