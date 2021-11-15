@@ -11,7 +11,8 @@ rowid = hash(uuid.uuid4())
 loggedin_rowid = rowid
 #stdLibv8.menu(rowid)
 stdLibv8.takeQuiz(rowid, username='craz')
-
+#stdLibv8.checkAnswer(rowid, username='craz', resultList=[])
+#stdLibv8.adminCreateQuestionPool(rowid)
 
 
 

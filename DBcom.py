@@ -13,12 +13,13 @@ class UserDB():
         os.makedirs(path, exist_ok=True)
         if colType == 's':
             data = data.encode('utf-8')
-            data = str(base64.b64encode(data))[2:-1]
+            data = str(base64.b64encode(data))
         
 
         filename = str(localrowid) + '_' + str(colType) + '_' + str(data)
-        with open(path +'/'+ filename, 'w+') as f:
-            f.write(str(data))
+        date = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        with open(path+'/'+filename, 'w+') as f:
+            f.write(date+'_'+str(data))
         return localrowid
         
     

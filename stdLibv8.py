@@ -291,7 +291,7 @@ def adminMenu(localrowid, username):
     else:
         menu(localrowid)
 
-def doAdminUser(localrowid):
+def doAdminUser(localrowid, username):
     print('Welcome to the user admin menu [{}]'.format(localrowid))
     print('1. Create new user')
     print('2. List Users to Update/Delete')
@@ -459,10 +459,18 @@ def adminCreateQuestionPool(localrowid):
             print('What is the correct answer?')
             correctAnswer = input('> ')
             #correctAnswer = correctAnswer.encode('utf-8')
+
             if correctAnswer not in options:
                 print('Error, the correct answer is not in the options...')
                 adminCreateQuestionPool(localrowid)
-            DBcom.UserDB.create('questions','options','r',questionid,[options])
+            options = str(options)
+            #print(options)
+            #print(type(options))
+            options = options.replace("'","")
+            options = options.replace("[","")
+            options = options.replace("]","")
+            #print(options)
+            DBcom.UserDB.create('questions','options','r',questionid,options)
             DBcom.UserDB.create('questions','correctAnswers','r',questionid,correctAnswer)
             DBcom.UserDB.create('questions', 'questions', 'r', questionid, question)
             print('Question {} created successfully'.format(i))
@@ -587,7 +595,7 @@ def takeQuiz(localrowid, username):
     #print(allQns)
     alloptions = DBcom.UserDB.find('questions', 'options', 'id', 'raw','')
     allQnscnt = len(allQns)
-    allQnsnum = 0
+    allQnsnum = len(allQns)
     allOptnum = len(alloptions)
     Qnscnt = 1
     #print(allQns)
@@ -595,11 +603,16 @@ def takeQuiz(localrowid, username):
     #print(username)
     for allQnscnt in allQns:  
         print(allQnscnt)
-        print("QuestionID: {}".format(Qnscnt))
+        print("QuestionID: {}/{}".format(Qnscnt, allQnsnum))
         print("Question: {}".format(str(allQnscnt.split('_')[2])))
         for allOptnum in alloptions:
-            print(allOptnum)
-            print("Options: {}".format(str(allOptnum.split('_')[2][2:-2])))
+            #print(allOptnum)
+            allOptnum = allOptnum.split('_')[2]
+            allOptnum = allOptnum.split(',')
+            print("Options: {}".format(str(allOptnum[0])))
+            print("        {}".format(str(allOptnum[1])))
+            print("        {}".format(str(allOptnum[2])))
+            print("        {}".format(str(allOptnum[3])))
         print('+==================================+')
         print("What is the correct Answer?: ")
         result = str(input('> '))
@@ -615,7 +628,6 @@ def checkAnswer(localrowid, username, resultList):
     print('+==================================+\n')
     print('Checking Answer...')
     print('+==================================+\n')
-    resultList = ['298', '11']
     correctNum = 0
     totalQn = len(resultList)
     modelAnsList = DBcom.UserDB.find('questions', 'correctAnswers', 'id', 'raw','')
@@ -631,6 +643,6 @@ def checkAnswer(localrowid, username, resultList):
     print('Final score: {}'.format(percnt))
     print('{}/{} questions correct.'.format(correctNum, totalQn))
     #add the date and time of the quiz to percnt
-    DBcom.UserDB.createQn('users', 'results', 's', localrowid, percnt)
+    DBcom.UserDB.create('users', 'results', 'r', localrowid, percnt)
     print('+==================================+\n')
     
