@@ -23,7 +23,7 @@ def menu(localrowid):
         if choice == 1:
             login(localrowid)
         elif choice == 2:
-            registerUser(localrowid,"normal")
+            registerUser(localrowid, '')
         elif choice == 3:
             forgetPassword(localrowid)
         elif choice == 1008:
@@ -31,17 +31,19 @@ def menu(localrowid):
         else:
             menu(localrowid)
     except ValueError:
+        print('Goodbye...')
+
         os._exit(0)
     menu(localrowid)
 
 def aclchecker(localrowid, aclcheck):
     #rowid = DBcom.UserDB.find('users', 'username', 'data', 'id', username)
     aclraw = DBcom.UserDB.find('users', 'acl', 'id', 'raw', localrowid)
-    print(aclraw)
-    print(localrowid)
+    #print(aclraw)
+    #print(localrowid)
 
     acl = str(base64.b64decode(aclraw[0].split('_')[2]))[1:]
-    print(acl)
+    #print(acl)
     if acl[aclcheck] == '1':
         return True
     else:
@@ -118,11 +120,12 @@ def registerUser(rowid,fromwhere, acl = '00000'):
             print('Registration successful,\nreturn to the menu to login!\n')
             print('your email is {}, recovery OTP is {}'.format(email,otp))
             print('+==================================+\n')
+            
             if fromwhere == "admin":
                 doAdminUser(rowid)
             else:
                 menu(rowid)
-        except:
+        except ValueError:
             print('Error creating user')
             registerUser(localrowid,fromwhere)
     else:
@@ -143,19 +146,23 @@ def forgetPassword(localrowid):
         print('Email is not valid')
         forgetPassword(localrowid)
     else:
-        localrowid = DBcom.UserDB.find('users', 'email', 'data', 'id', email)[0]
+        try:
+            localrowid = DBcom.UserDB.find('users', 'email', 'data', 'id', email)[0]
+        except IndexError:
+            print('Email not found')
+            forgetPassword(localrowid)
         print(localrowid)
         if len(localrowid) != '':
-            #try:
-            #password = str(base64.b64decode(DBcom.UserDB.find('users', 'password', 'id','raw', localrowid[0])[0].split('_')[2]))[1:]
-            password = str(DBcom.UserDB.find('users', 'password', 'id','raw', localrowid)).split('_')[2][0:-2]
-            print(password)
-            print('+==================================+\n')
-            print('We have sent the password {} to your Email {}'.format(password,email))
-            print('+==================================+\n')
-            menu(localrowid)
-            #except:
-            #    forgetPassword(rowid)
+            try:
+                #password = str(base64.b64decode(DBcom.UserDB.find('users', 'password', 'id','raw', localrowid[0])[0].split('_')[2]))[1:]
+                password = str(DBcom.UserDB.find('users', 'password', 'id','raw', localrowid)).split('_')[2][0:-2]
+                print(password)
+                print('+==================================+\n')
+                print('We have sent the password {} to your Email {}'.format(password,email))
+                print('+==================================+\n')
+                menu(localrowid)
+            except:
+                forgetPassword(localrowid)
         else:
             print('Email not found')
             forgetPassword(localrowid)
@@ -186,7 +193,6 @@ def login(localrowid):
         except ValueError:
             print('Please enter a valid password')
             login(localrowid)
-
         rowid = DBcom.UserDB.find('users', 'username', 'data', 'id', username)
         username_pass = DBcom.UserDB.find('users', 'username', 'data','bool', username)
         password_pass = DBcom.UserDB.find('users', 'password', 'data','bool', password)
@@ -195,14 +201,12 @@ def login(localrowid):
         #print(userid)
         #print(rowid)
         localrowid = rowid
-
         print('username:[{}/{}]/password:[{}/{}]/loggedin_rowid:{}'.format(username,username_pass,password,password_pass,localrowid))
-
         try:
             if len(username_pass) > 0 and len(password_pass) > 0 and localrowid != '':
-                print('=============================')
+                print('+==================================+')
                 print('Login successful {}/{}'.format(username,localrowid))
-                print('=============================')
+                print('+==================================+')
                 doUserQuestions(localrowid, username)
             else :
                 print('a. Incorrect username or password')
@@ -291,7 +295,7 @@ def adminMenu(localrowid, username):
     else:
         menu(localrowid)
 
-def doAdminUser(localrowid, username):
+def doAdminUser(localrowid):
     print('Welcome to the user admin menu [{}]'.format(localrowid))
     print('1. Create new user')
     print('2. List Users to Update/Delete')
@@ -306,6 +310,7 @@ def doAdminUser(localrowid, username):
     elif choice == 2:
         doAdminListUsers(localrowid, rowid='')
     else:
+        print('Invalid choice...')
         menu(localrowid)
 
 def doAdminUserEditData(userid, column, value, localrowid):
@@ -341,6 +346,7 @@ def doAdminUserDelData(userid, localrowid):
             print('Invalid choice')
             doAdminUserEditList(userid, localrowid)
     except ValueError:
+        print('Invalid choice...')
         doAdminUserEditList(userid, localrowid)
 
 def doAdminUserEditList(userid, localrowid):
@@ -382,6 +388,7 @@ def doAdminUserEditList(userid, localrowid):
             else:
                 doAdminUserEditData(userid, choice, changeTo, localrowid)
     except ValueError:
+        print('Invalid choice...')
         doAdminListUsers(localrowid, userid)
 
 def doAdminListUsers(localrowid, rowid=''):
@@ -398,6 +405,7 @@ def doAdminListUsers(localrowid, rowid=''):
     try:
         choice = int(input('Please enter your choice [{}-{}]: '.format(1,alluserscnt)))
     except ValueError:
+        print('Invalid choice...')
         doAdminUser(rowid)
 
     if choice > alluserscnt:
@@ -597,33 +605,148 @@ def takeQuiz(localrowid, username):
     allQnscnt = len(allQns)
     allQnsnum = len(allQns)
     allOptnum = len(alloptions)
-    Qnscnt = 1
+    state = True
+    forward = ''
+    question = ''
+    Qnscnt = 0
+    Qnsid = 1
     #print(allQns)
     #print(alloptions)
     #print(username)
-    for allQnscnt in allQns:  
-        print(allQnscnt)
-        print("QuestionID: {}/{}".format(Qnscnt, allQnsnum))
-        print("Question: {}".format(str(allQnscnt.split('_')[2])))
-        for allOptnum in alloptions:
+    while state == True:
+        if forward == 'n':
+            Qnscnt = Qnscnt + 1
+            Qnsid = Qnsid + 1
+        elif forward == '':
+            pass
+        elif forward == 'p':
+            Qnscnt = Qnscnt - 1
+            Qnsid = Qnsid - 1
+            resultList.pop(Qnscnt)
+            resultList.pop(Qnscnt-1)
+        else:
+            pass
+        question = allQns[Qnscnt]
+        allOptnum = alloptions[Qnscnt]
+        print("QuestionID: {}/{}".format(Qnsid, allQnsnum))
+        print("Question: {}".format(str(question.split('_')[2])))
+        if question.split('_')[0] == allOptnum.split('_')[0]:
             #print(allOptnum)
-            allOptnum = allOptnum.split('_')[2]
-            allOptnum = allOptnum.split(',')
-            print("Options: {}".format(str(allOptnum[0])))
-            print("        {}".format(str(allOptnum[1])))
-            print("        {}".format(str(allOptnum[2])))
-            print("        {}".format(str(allOptnum[3])))
+                allOptnum = allOptnum.split('_')[2]
+                allOptnum = allOptnum.split(',')
+                allOptnum = [x.strip() for x in allOptnum]
+                print("Options: {}".format(str(allOptnum[0])))
+                print("        {}".format(str(allOptnum[1])))
+                print("        {}".format(str(allOptnum[2])))
+                print("        {}".format(str(allOptnum[3])))
+                print('+==================================+')
+                print("What is the correct Answer?: ")
+                try:
+                    result = str(input('> '))
+                    if result not in allOptnum:
+                        print('Answer not in options')
+                        print('Answer not saved.')
+                        result = ''
+                    else:
+                        resultList.append(result)
+                except result == '':
+                    print('Error, please enter a valid answer')
+                    pass
+                except ValueError:
+                    print('Error, please enter a valid answer')
+                    pass
+        
+        
+        print(resultList)
         print('+==================================+')
-        print("What is the correct Answer?: ")
-        result = str(input('> '))
-        resultList.append(result)
+        print('[n]ext to continue, [p]revious to back.[n/p]')
+        try:
+            forward = str(input('> '))
+        except ValueError:
+            print('Invalid input...')
+            takeQuiz(localrowid, username)
+        if Qnsid == allQnsnum:
+            print('You have reached the end of the quiz')
+            print('[y]es to submit. [p]revious to back.')
+            try:
+                submit = str(input('> '))
+            except ValueError:
+                print('Invalid input...')
+                takeQuiz(localrowid, username)
+            if submit == 'y':
+                state = False
+                checkAnswer(localrowid, username, resultList)
+            else:
+                Qnscnt = Qnscnt - 1
+                Qnsid = Qnsid - 1
+                resultList.pop(Qnscnt)
+                resultList.pop(Qnscnt-1)
+
+    '''
+    for i in allQns:
+        if forward == '':
+            question = i
+        elif forward == 'n':
+            print(question)
+            question = allQns[Qnscnt+1]
+            print(question)
+            Qnsid+=1
+        elif forward == 'p':
+            print(question)
+            question = allQns[Qnscnt-3]
+            print(question)
+            Qnsid-=1
+    '''
+    '''
+    for i in allQns:
+        question = i
+        print(Qnscnt)
+        print(allQns)
         print(allQnscnt)
-        Qnscnt = Qnscnt + 1
+        print("QuestionID: {}/{}".format(Qnsid, allQnsnum))
+        print("Question: {}".format(str(question.split('_')[2])))
+        for allOptnum in alloptions:
+            if question.split('_')[0] == allOptnum.split('_')[0]:
+            #print(allOptnum)
+                allOptnum = allOptnum.split('_')[2]
+                allOptnum = allOptnum.split(',')
+                print("Options: {}".format(str(allOptnum[0])))
+                print("        {}".format(str(allOptnum[1])))
+                print("        {}".format(str(allOptnum[2])))
+                print("        {}".format(str(allOptnum[3])))
+                print('+==================================+')
+                print("What is the correct Answer?: ")
+                result = str(input('> '))
+                resultList.append(result)
+                #ask the user if they want to go next or previous question
+                print('+==================================+')
+                print('[n]ext to continue, [p]revious to back.[n/p]')
+                try:
+                    forward = str(input('> '))
+                except ValueError:
+                    print('Invalid input...')
+                    takeQuiz(localrowid, username)
+        #print(allQnscnt)
         #print(resultList)
-    checkAnswer(localrowid, username, resultList)
+    try:
+        print('+==================================+')
+        print('Do you want to submit the quiz?')
+        print('[y]es or [n]o')
+        submit = str(input('> '))
+        if submit == 'y':
+            print('+==================================+')
+            checkAnswer(localrowid, username, resultList)
+        elif submit == 'n':
+            takeQuiz(localrowid, username)
+        else:
+            print('Invalid input...')
+            takeQuiz(localrowid, username)
+    except ValueError:
+        print('Invalid input...')
+        takeQuiz(localrowid, username)
     #DBcom.UserDB.createQn('users', 'results', 's', localrowid, resultList)
     print('+==================================+\n')
-    
+    '''
 def checkAnswer(localrowid, username, resultList):
     print('+==================================+\n')
     print('Checking Answer...')
@@ -639,10 +762,11 @@ def checkAnswer(localrowid, username, resultList):
         else:
             print('Question {}. Incorrect!'.format(i+1))
     percnt = (correctNum/totalQn) * 100
+    percnt = round(percnt, 2)
     print('User: {}'.format(username))
     print('Final score: {}'.format(percnt))
     print('{}/{} questions correct.'.format(correctNum, totalQn))
-    #add the date and time of the quiz to percnt
-    DBcom.UserDB.create('users', 'results', 'r', localrowid, percnt)
+    DBcom.UserDB.createQn('users', 'results', 'r', localrowid, percnt)
+    #write percnt and username to results.csv
+    open('results.csv', 'a').write('{},{},{}\n'.format(username, percnt, datetime.datetime.now()))
     print('+==================================+\n')
-    

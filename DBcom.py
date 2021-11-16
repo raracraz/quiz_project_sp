@@ -5,8 +5,7 @@ import hashlib
 import glob
 import shutil
 import re
-import stdLibv8
-
+from typing import ByteString
 class UserDB():
     def create(tableName, colName, colType, localrowid, data):
         path = ('jsonPython/db/' + tableName + '/' + colName)
@@ -15,13 +14,12 @@ class UserDB():
             data = data.encode('utf-8')
             data = str(base64.b64encode(data))
         
-
-        filename = str(localrowid) + '_' + str(colType) + '_' + str(data)
-        date = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        filename = str(localrowid) + '_' + str(colType) + '_' + str(data)[2:-1]
+        #date = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         with open(path+'/'+filename, 'w+') as f:
-            f.write(date+'_'+str(data))
+            #f.write(date+'_'+str(data))
+            f.write(str(data))
         return localrowid
-        
     
     def createQn(tableName, colName, colType, localrowid, data):
         path = ('jsonPython/db/' + tableName + '/' + colName)
@@ -54,7 +52,7 @@ class UserDB():
             if searchPart == 'data':
                 #file_data = str(file.split('_')[2])[:-2]
                 file_data = str(file.split('_')[2])
-                file_data = base64.b64decode(file_data)
+                file_data = base64.b64decode(file_data + '==')
             else:
                 file_data = str(file.split('_')[0])
             
@@ -132,4 +130,3 @@ class UserDB():
         find_result = UserDB.find(tableName, colName, 'id', 'raw', localrowid[0])
         path = ('jsonPython/db/' + tableName + '/' + colName + '/' + find_result[0])
         os.remove(path)
-        
