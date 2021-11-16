@@ -248,10 +248,8 @@ def doUserQuestions(localrowid, username):
         menu(localrowid)
     if userChoice == 1:
         takeQuiz(localrowid, username)
-        pass
     elif userChoice == 2:
-        #userResults(localrowid)
-        pass
+        userResults(localrowid, username)
     elif userChoice == 5:
         try:
             if aclchecker(localrowid[0], 4) == True:
@@ -273,6 +271,33 @@ def doUserQuestions(localrowid, username):
      #       pass
    # except ValueError:
 
+def userResults(localrowid, username):
+    print('+==================================+\n')
+    print('User Results Menu...')
+    print('UserID: {}'.format(username))
+    print('+==================================+\n')
+    
+    '''
+    try:
+        userChoice = int(input('> '))
+    except ValueError:
+        doUserQuestions(localrowid, username)
+    '''
+    i = 1
+    userList = DBcom.UserDB.find('users', 'results', 'id', 'raw', localrowid)
+    for results in userList:
+        date = results.split('_')[2]
+        date = str(base64.b64decode(date).decode('utf-8'))
+        userResult = results.split('_')[3]
+        print('{}. {} - {}%'.format(i, date, userResult))
+        i += 1
+    print('\nPress <Enter> to go back')
+    print('+==================================+\n')
+    try:
+        userChoice = int(input('> '))
+        doUserQuestions(localrowid, username)
+    except ValueError:
+        doUserQuestions(localrowid, username)
 #############################################################################
 #                           Admin Menu + features                           #
 #############################################################################
@@ -289,7 +314,7 @@ def adminMenu(localrowid, username):
     if choice == 1:
         doAdminUser(localrowid)
     elif choice == 2:
-        doAdminQuestions(localrowid, '')
+        doAdminQuestions(localrowid, username)
     elif choice == 3:
         menu(localrowid)
     else:
@@ -415,7 +440,7 @@ def doAdminListUsers(localrowid, rowid=''):
         rowid = allusers[choice-1].split('_')[0]
         doAdminUserEditList(rowid, localrowid)
 
-def doAdminQuestions(rowid, questionid):
+def doAdminQuestions(rowid, username):
     print('Welcome to the question admin menu')
     print('1. Create new question pool ')
     print('2. List Question Pools to Update/Delete')
@@ -423,15 +448,15 @@ def doAdminQuestions(rowid, questionid):
     try:
         choice = int(input('Please enter your choice: '))
     except ValueError:
-        adminMenu(rowid, questionid)
+        adminMenu(rowid, username)
     if choice == 1:
-        adminCreateQuestionPool(rowid)
+        adminCreateQuestionPool(rowid, username)
     elif choice == 2:
-        listQuestionPool(rowid, questionid)
+        listQuestionPool(rowid, username)
     else:
         pass
 
-def adminCreateQuestionPool(localrowid):
+def adminCreateQuestionPool(localrowid, username):
     print('+==================================+\n')
     print('Creating Question Pool...')
     print('+==================================+\n')
@@ -446,31 +471,34 @@ def adminCreateQuestionPool(localrowid):
     try:
         questionCount = int(input('> '))
     except ValueError:
-        adminMenu(localrowid)
+        adminMenu(localrowid, username)
     if questionCount < 1 or questionCount > 10:
         print('Invalid number of questions...')
-        adminMenu(localrowid)
+        adminMenu(localrowid, username)
     else:
         for i in range(1,questionCount+1):
             options = []
-            questionid = hash(uuid.uuid4())
+            opt = ['a','b','c','d']
+            questionid = os.urandom(16)
+            questionid = abs(hash(questionid) % (10 ** 8))
             print('\nCreating Question {}'.format(i))
             print('What is the question?')
             question = input('> ')
             question+str(i)
             #question = question.encode('utf-8')
             for j in range(1,5):
-                print('What is option {}?'.format(j))
+                print('What is the option {}?'.format(opt[j-1]))
                 inputOptions = input('> ')
                 #inputOptions = inputOptions.encode('utf-8')
                 options.append(inputOptions)
             print('What is the correct answer?')
+            print('[a, b, c ,d]')
             correctAnswer = input('> ')
             #correctAnswer = correctAnswer.encode('utf-8')
 
-            if correctAnswer not in options:
+            if correctAnswer not in opt:
                 print('Error, the correct answer is not in the options...')
-                adminCreateQuestionPool(localrowid)
+                adminCreateQuestionPool(localrowid, username)
             options = str(options)
             #print(options)
             #print(type(options))
@@ -485,9 +513,9 @@ def adminCreateQuestionPool(localrowid):
         print('+==================================+\n')
         print('\n')
         print('+==================================+\n')
-    adminMenu(localrowid)
+    adminMenu(localrowid, username)
     
-def listQuestionPool(localrowid, questionid):
+def listQuestionPool(localrowid, username):
     print('+==================================+\n')
     print('Listing Question Pool...')
     print('+==================================+\n')
@@ -506,17 +534,20 @@ def listQuestionPool(localrowid, questionid):
     print('\nPress <Enter> to go back\n')
     try:
         questionNumber = int(input('Please enter from [{}-{}]: '.format(1,allQnsnum)))
-        adminModifyQuestion(localrowid, questionNumber, questionid)
+        adminModifyQuestion(localrowid, questionNumber, username)
     except ValueError:
-        doAdminQuestions(localrowid, questionid)
+        doAdminQuestions(localrowid, username)
 
-def adminModifyQuestion(localrowid, questionNumber, questionid):
+def adminModifyQuestion(localrowid, questionNumber, username):
     print('+==================================+\n')
     print('Modifying Question...')
     print('+==================================+\n')
+    questionid = ''
+    count = 0
+    opt = ['a', 'b', 'c', 'd']
     if questionNumber < 1 or questionNumber > 10:
         print('Invalid number of questions...')
-        adminMenu(localrowid)
+        adminMenu(localrowid, username)
     else:
         questionNumber = questionNumber - 1
         question = DBcom.UserDB.find('questions', 'questions', 'id', 'raw', '')
@@ -526,7 +557,9 @@ def adminModifyQuestion(localrowid, questionNumber, questionid):
         correctAnswer = DBcom.UserDB.find('questions', 'correctAnswers', 'id', 'raw', '')
         correctAnswer = correctAnswer[questionNumber]
         print('Question: {}'.format(question.split('_')[2]))
-        print('Options: {}'.format(options.split('_')[2][2:-2]))
+        print('Options: ')
+        for i in range(1,5):
+            print('{}) {}'.format(opt[i-1],(options.split('_')[2]).replace(' ', '').split(',')[i-1]))
         print('Correct Answer: {}'.format(correctAnswer.split('_')[2]))
         print('+==================================+\n')
         print('What do you want to modify?')
@@ -538,7 +571,7 @@ def adminModifyQuestion(localrowid, questionNumber, questionid):
         try:
             modifyChoice = int(input('> '))
         except ValueError:
-            adminMenu(localrowid)
+            adminMenu(localrowid, username)
         if modifyChoice == 1:
             print(question)
             questionid = question.split('_')[0]
@@ -550,7 +583,7 @@ def adminModifyQuestion(localrowid, questionNumber, questionid):
             print(question)
             DBcom.UserDB.update('questions', 'questions', 'r', questionid, newQuestion)
             print('Question successfully modified')
-            listQuestionPool(localrowid, questionid)
+            listQuestionPool(localrowid, username)
         elif modifyChoice == 2:
             print('These are the current options: ')
             print(options.split('_')[2][2:-2])
@@ -561,15 +594,16 @@ def adminModifyQuestion(localrowid, questionNumber, questionid):
             options = []
             try:
                 for i in range(1,5):
-                    newOption = input('Enter the new option {}: '.format(i))
+                    newOption = str(input('Enter the new option {}: '.format(i)))
                     options.append(newOption)
                     print(options)
             except ValueError:
-                adminModifyQuestion(localrowid, questionNumber, questionid)
+                print('Invalid input...')
+                adminModifyQuestion(localrowid, questionNumber, username)
             print(options)
             DBcom.UserDB.update('questions', 'options', 'r', questionid, [options])
             print('Option successfully modified')
-            listQuestionPool(localrowid, questionid)
+            listQuestionPool(localrowid, username)
         elif modifyChoice == 3:
             print(correctAnswer.split('_')[2])
             print('What is the new correct answer?')
@@ -578,17 +612,17 @@ def adminModifyQuestion(localrowid, questionNumber, questionid):
                 print('<Enter> to go back')
                 newCorrectAnswer = input('What is the correct answer?: ')
             except ValueError:
-                adminModifyQuestion(localrowid, questionNumber, questionid)
+                adminModifyQuestion(localrowid, questionNumber, username)
             
-            if newCorrectAnswer not in options:
+            if newCorrectAnswer not in opt:
                 print('Error, the correct answer is not in the options...')
                 print('Answer not changed.')
-                adminModifyQuestion(localrowid, questionNumber, questionid)
+                adminModifyQuestion(localrowid, questionNumber, username)
             else:
                 DBcom.UserDB.update('questions', 'correctAnswers', 'r', questionid, newCorrectAnswer)
                 print('Correct answer successfully modified')
-                listQuestionPool(localrowid, questionid)
-    listQuestionPool(localrowid, questionid)
+                listQuestionPool(localrowid, username)
+    listQuestionPool(localrowid, username)
 
 ##############################################################################
 #                               TakeQuiz                                     #
@@ -629,16 +663,16 @@ def takeQuiz(localrowid, username):
         question = allQns[Qnscnt]
         allOptnum = alloptions[Qnscnt]
         print("QuestionID: {}/{}".format(Qnsid, allQnsnum))
-        print("Question: {}".format(str(question.split('_')[2])))
+        print("Question:\n{}".format(str(question.split('_')[2])))
         if question.split('_')[0] == allOptnum.split('_')[0]:
             #print(allOptnum)
                 allOptnum = allOptnum.split('_')[2]
                 allOptnum = allOptnum.split(',')
                 allOptnum = [x.strip() for x in allOptnum]
-                print("Options: {}".format(str(allOptnum[0])))
-                print("        {}".format(str(allOptnum[1])))
-                print("        {}".format(str(allOptnum[2])))
-                print("        {}".format(str(allOptnum[3])))
+                print("a) {}".format(str(allOptnum[0])))
+                print("b) {}".format(str(allOptnum[1])))
+                print("c) {}".format(str(allOptnum[2])))
+                print("c) {}".format(str(allOptnum[3])))
                 print('+==================================+')
                 print("What is the correct Answer?: ")
                 try:
@@ -751,7 +785,9 @@ def checkAnswer(localrowid, username, resultList):
     print('+==================================+\n')
     print('Checking Answer...')
     print('+==================================+\n')
+    localrowid = localrowid[0]
     correctNum = 0
+    state = True
     totalQn = len(resultList)
     modelAnsList = DBcom.UserDB.find('questions', 'correctAnswers', 'id', 'raw','')
     #print(modelAnsList)
@@ -769,4 +805,22 @@ def checkAnswer(localrowid, username, resultList):
     DBcom.UserDB.createQn('users', 'results', 'r', localrowid, percnt)
     #write percnt and username to results.csv
     open('results.csv', 'a').write('{},{},{}\n'.format(username, percnt, datetime.datetime.now()))
-    print('+==================================+\n')
+    #ask if user wants to retake quiz
+    while state == True:
+        print('Do you want to retake the quiz?')
+        print('[y]es or [n]o')
+        try:
+            retake = str(input('> '))
+            if retake == 'y':
+                takeQuiz(localrowid, username)
+            else:
+                print('+==================================+')
+                print('Thank you for taking the quiz.')
+                print('+==================================+')
+                doUserQuestions(localrowid, username)
+                state = False
+        except ValueError:
+            print('Invalid input...')
+            doUserQuestions(localrowid, username)
+
+        print('+==================================+\n')

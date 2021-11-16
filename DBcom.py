@@ -14,7 +14,8 @@ class UserDB():
             data = data.encode('utf-8')
             data = str(base64.b64encode(data))
         
-        filename = str(localrowid) + '_' + str(colType) + '_' + str(data)[2:-1]
+        #filename = str(localrowid) + '_' + str(colType) + '_' + str(data)[2:-1]
+        filename = str(localrowid) + '_' + str(colType) + '_' + str(data)
         #date = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         with open(path+'/'+filename, 'w+') as f:
             #f.write(date+'_'+str(data))
@@ -24,10 +25,13 @@ class UserDB():
     def createQn(tableName, colName, colType, localrowid, data):
         path = ('jsonPython/db/' + tableName + '/' + colName)
         os.makedirs(path, exist_ok=True)
-        filename = str(localrowid) + '_' + str(colType) + '_' + str(data)[2:-1]
         date = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        date = date.encode('utf-8')
+        date = str(base64.b64encode(date))
+        data = str(date) + '_' + str(data)
+        filename = str(localrowid) + '_' + str(colType) + '_' + str(data)[2:-1]
         with open(path+'/'+filename, 'w+') as f:
-            f.write(date+'_'+str(data))
+            f.write(str(data))
         return localrowid
 
     def find(tableName, colName, searchPart, returnType, data):
