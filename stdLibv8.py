@@ -77,9 +77,24 @@ def registerUser(rowid,fromwhere, acl = '00000'):
         print('+==================================+')
         print('Create User Menu')
         print('+==================================+')        
-
+        print('Requirements:')
+        print('1. Username must be between 4 and 20 characters')
+        print('2. Username must contain at least one special character [@#$%^&+=]')
+        print('3. Username must contain at least one upper and lower case letter')
+        print('4. Username must contain at least one number [0-9]')
+        print('5. Password must be between 4 and 20 characters')
+        print('6. Password must contain at least one special character [@#$%^&+=]')
+        print('7. Password must contain at least one number [0-9]')
+        print('8. Password must contain at least one upper and lower case letter')
+    reg = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!#%*?&]{4,20}$"
+    pat = re.compile(reg)
     username = str(input('Please enter your username: '))
-
+    mat = re.search(pat, username)
+    if mat:
+        pass
+    else:
+        print('Username is not valid')
+        registerUser(rowid,fromwhere)
     #if username is empty go back
     if username == '':
         if fromwhere == 'admin':
@@ -88,6 +103,12 @@ def registerUser(rowid,fromwhere, acl = '00000'):
             menu(localrowid)
 
     password = str(input('Please enter your password: '))
+    mat = re.search(pat, password)
+    if mat:
+        pass
+    else:
+        print('Password is not valid')
+        registerUser(rowid,fromwhere)
     email = str(input('Please enter your email: '))
     otp = str(generateOTP())
 
@@ -414,7 +435,6 @@ def doAdminUserEditList(userid, localrowid):
             else:
                 doAdminUserEditData(userid, choice, changeTo, localrowid)
     except ValueError:
-        print('Invalid choice...')
         doAdminListUsers(localrowid, userid)
 
 def doAdminListUsers(localrowid, rowid=''):
@@ -431,7 +451,6 @@ def doAdminListUsers(localrowid, rowid=''):
     try:
         choice = int(input('Please enter your choice [{}-{}]: '.format(1,alluserscnt)))
     except ValueError:
-        print('Invalid choice...')
         doAdminUser(rowid)
 
     if choice > alluserscnt:
