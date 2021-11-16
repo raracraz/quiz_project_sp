@@ -7,6 +7,7 @@ import uuid
 import glob
 import shutil
 import DBcom
+import random
 #purpose of stdLibv7 is to make stdLibv7.py more organized
 def menu(localrowid):
     print('\n\n+==================================+')
@@ -440,10 +441,37 @@ def doAdminListUsers(localrowid, rowid=''):
         rowid = allusers[choice-1].split('_')[0]
         doAdminUserEditList(rowid, localrowid)
 
+def randomizeQuestions(localrowid, username):
+        print('+==================================+\n')
+        print('Randomizing Questions...')
+        print('+==================================+\n')
+        #get the list of questions
+        allQns = DBcom.UserDB.find('questions', 'questions', 'id', 'raw','')
+        #shuffle the list
+        print(allQns)
+        allQnsnum = len(allQns)
+        random.shuffle(allQns)
+        print(allQns)
+        #print the list1
+        #update the list
+        print(localrowid)
+        for qn in allQns:
+            rowid = qn.split('_')[0]
+            for i in range(0,allQnsnum):
+                if rowid == allQns[i].split('_')[0]:
+                    DBcom.UserDB.update('questions', 'questions', 'r',rowid, str(allQns[i].split('_')[2]))
+                    break
+
+        print('+==================================+\n')
+        print('Questions randomized successfully!')
+        print('+==================================+\n')
+        adminMenu(localrowid, username)
+
 def doAdminQuestions(rowid, username):
     print('Welcome to the question admin menu')
     print('1. Create new question pool ')
     print('2. List Question Pools to Update/Delete')
+    print('3. Randomize questions')
     print('\n<ENTER> to go Back')
     try:
         choice = int(input('Please enter your choice: '))
@@ -453,6 +481,9 @@ def doAdminQuestions(rowid, username):
         adminCreateQuestionPool(rowid, username)
     elif choice == 2:
         listQuestionPool(rowid, username)
+    elif choice == 3:
+        randomizeQuestions(rowid, username)
+        
     else:
         pass
 
@@ -624,6 +655,10 @@ def adminModifyQuestion(localrowid, questionNumber, username):
                 listQuestionPool(localrowid, username)
     listQuestionPool(localrowid, username)
 
+
+    
+        
+
 ##############################################################################
 #                               TakeQuiz                                     #
 ##############################################################################
@@ -639,6 +674,7 @@ def takeQuiz(localrowid, username):
     allQnscnt = len(allQns)
     allQnsnum = len(allQns)
     allOptnum = len(alloptions)
+    Opt = ['a', 'b', 'c', 'd']
     state = True
     forward = ''
     question = ''
@@ -651,44 +687,52 @@ def takeQuiz(localrowid, username):
         if forward == 'n':
             Qnscnt = Qnscnt + 1
             Qnsid = Qnsid + 1
-        elif forward == '':
-            pass
         elif forward == 'p':
             Qnscnt = Qnscnt - 1
             Qnsid = Qnsid - 1
-            resultList.pop(Qnscnt)
-            resultList.pop(Qnscnt-1)
+            try:
+                resultList.pop(Qnscnt)
+                resultList.pop(Qnscnt-1)
+            except IndexError:
+                print('Error, you cannot go back on the first question')
+                pass
         else:
             pass
         question = allQns[Qnscnt]
-        allOptnum = alloptions[Qnscnt]
+        
+        print(question)
+        print(allOptnum)
         print("QuestionID: {}/{}".format(Qnsid, allQnsnum))
         print("Question:\n{}".format(str(question.split('_')[2])))
-        if question.split('_')[0] == allOptnum.split('_')[0]:
-            #print(allOptnum)
-                allOptnum = allOptnum.split('_')[2]
-                allOptnum = allOptnum.split(',')
-                allOptnum = [x.strip() for x in allOptnum]
-                print("a) {}".format(str(allOptnum[0])))
-                print("b) {}".format(str(allOptnum[1])))
-                print("c) {}".format(str(allOptnum[2])))
-                print("c) {}".format(str(allOptnum[3])))
-                print('+==================================+')
-                print("What is the correct Answer?: ")
-                try:
-                    result = str(input('> '))
-                    if result not in allOptnum:
-                        print('Answer not in options')
-                        print('Answer not saved.')
-                        result = ''
-                    else:
-                        resultList.append(result)
-                except result == '':
-                    print('Error, please enter a valid answer')
-                    pass
-                except ValueError:
-                    print('Error, please enter a valid answer')
-                    pass
+        for i in range(1,5):
+            allOptnum = alloptions[i-1]
+            if question.split('_')[0] == allOptnum.split('_')[0]:
+                #print(allOptnum)
+                    allOptnum = allOptnum.split('_')[2]
+                    allOptnum = allOptnum.split(',')
+                    allOptnum = [x.strip() for x in allOptnum]
+                    print(allOptnum)
+                    print("a) {}".format(str(allOptnum[0])))
+                    print("b) {}".format(str(allOptnum[1])))
+                    print("c) {}".format(str(allOptnum[2])))
+                    print("d) {}".format(str(allOptnum[3])))
+                    print('+==================================+')
+                    print("What is the correct Answer?: ")
+                    print('[a,b,c,d]')
+                    try:
+                        result = str(input('> '))
+                        if result not in Opt:
+                            print('Answer not in options')
+                            print('Answer not saved.')
+                            result = ''
+                        else:
+                            resultList.append(result)
+                    except result == '':
+                        print('Error, please enter a valid answer')
+                        pass
+                    except ValueError:
+                        print('Error, please enter a valid answer')
+                        pass
         
         
         print(resultList)

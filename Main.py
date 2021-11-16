@@ -13,7 +13,7 @@ stdLibv8.menu(rowid)
 #stdLibv8.takeQuiz(rowid, username='craz')
 #stdLibv8.checkAnswer(rowid, username='craz', resultList=[])
 #stdLibv8.adminCreateQuestionPool(rowid)
-
+#stdLibv8.doAdminQuestions(rowid, username='craz')
 
 
 
