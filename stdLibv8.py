@@ -39,7 +39,7 @@ def menu(localrowid):
 
 def aclchecker(localrowid, aclcheck):
     #rowid = DBcom.UserDB.find('users', 'username', 'data', 'id', username)
-    aclraw = DBcom.UserDB.find('users', 'acl', 'id', 'raw', localrowid)
+    aclraw = DBcom.UserDB.find('users', 'acl', 'id','re' , 'raw', localrowid)
     #print(aclraw)
     #print(localrowid)
 
@@ -86,9 +86,13 @@ def registerUser(rowid,fromwhere, acl = '00000'):
         print('6. Password must contain at least one special character [@#$%^&+=]')
         print('7. Password must contain at least one number [0-9]')
         print('8. Password must contain at least one upper and lower case letter')
+        print('<b> to back')
+        print('+==================================+')
     reg = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!#%*?&]{4,20}$"
     pat = re.compile(reg)
     username = str(input('Please enter your username: '))
+    if username == 'b':
+        menu(localrowid)
     mat = re.search(pat, username)
     if mat:
         pass
@@ -113,7 +117,7 @@ def registerUser(rowid,fromwhere, acl = '00000'):
     otp = str(generateOTP())
 
     #first let's check if username is already taken
-    if len(DBcom.UserDB.find('users', 'username', 'data', 'bool', username)) > 0:
+    if len(DBcom.UserDB.find('users', 'username', 'data','' , 'bool', username)) > 0:
         print('Username already taken')
     else:
         username_pass = True
@@ -126,7 +130,7 @@ def registerUser(rowid,fromwhere, acl = '00000'):
         email_pass = True
 
     #now let's check if email is already taken
-    if len(DBcom.UserDB.find('users', 'email', 'data', 'bool', email)) > 0:
+    if len(DBcom.UserDB.find('users', 'email', 'data','' ,'bool', email)) > 0:
         print('Email already taken')
         email_pass = False
     else:
@@ -169,7 +173,7 @@ def forgetPassword(localrowid):
         forgetPassword(localrowid)
     else:
         try:
-            localrowid = DBcom.UserDB.find('users', 'email', 'data', 'id', email)[0]
+            localrowid = DBcom.UserDB.find('users', 'email', 'data','', 'id', email)[0]
         except IndexError:
             print('Email not found')
             forgetPassword(localrowid)
@@ -177,7 +181,7 @@ def forgetPassword(localrowid):
         if len(localrowid) != '':
             try:
                 #password = str(base64.b64decode(DBcom.UserDB.find('users', 'password', 'id','raw', localrowid[0])[0].split('_')[2]))[1:]
-                password = str(DBcom.UserDB.find('users', 'password', 'id','raw', localrowid)).split('_')[2][0:-2]
+                password = str(DBcom.UserDB.find('users', 'password', 'id','','raw', localrowid)).split('_')[2][0:-2]
                 print(password)
                 print('+==================================+\n')
                 print('We have sent the password {} to your Email {}'.format(password,email))
@@ -215,10 +219,10 @@ def login(localrowid):
         except ValueError:
             print('Please enter a valid password')
             login(localrowid)
-        rowid = DBcom.UserDB.find('users', 'username', 'data', 'id', username)
-        username_pass = DBcom.UserDB.find('users', 'username', 'data','bool', username)
-        password_pass = DBcom.UserDB.find('users', 'password', 'data','bool', password)
-        userid = DBcom.UserDB.find('users', 'username', 'id', 'id', username)
+        rowid = DBcom.UserDB.find('users', 'username', 'data','', 'id', username)
+        username_pass = DBcom.UserDB.find('users', 'username', 'data','','bool', username)
+        password_pass = DBcom.UserDB.find('users', 'password', 'data','','bool', password)
+        userid = DBcom.UserDB.find('users', 'username', 'id','', 'id', username)
         #print(localrowid)
         #print(userid)
         #print(rowid)
@@ -306,13 +310,14 @@ def userResults(localrowid, username):
         doUserQuestions(localrowid, username)
     '''
     i = 1
-    userList = DBcom.UserDB.find('users', 'results', 'id', 'raw', localrowid)
+    userList = DBcom.UserDB.find('users', 'results', 'id','re',  'raw', localrowid)
     for results in userList:
-        date = results.split('_')[2]
-        date = str(base64.b64decode(date).decode('utf-8'))
-        userResult = results.split('_')[3]
-        print('{}. {} - {}%'.format(i, date, userResult))
-        i += 1
+        if localrowid[0] == results.split('_')[0]:
+            date = results.split('_')[2]
+            date = str(base64.b64decode(date).decode('utf-8'))
+            userResult = results.split('_')[3]
+            print('{}. {} - {}%'.format(i, date, userResult))
+            i += 1
     print('\nPress <Enter> to go back')
     print('+==================================+\n')
     try:
@@ -397,11 +402,11 @@ def doAdminUserDelData(userid, localrowid):
         doAdminUserEditList(userid, localrowid)
 
 def doAdminUserEditList(userid, localrowid):
-    username = DBcom.UserDB.find('users', 'username', 'id', 'raw', userid)
-    acl = DBcom.UserDB.find('users', 'acl', 'id', 'raw', userid)
-    password = DBcom.UserDB.find('users', 'password', 'id', 'raw', userid)
-    otp = DBcom.UserDB.find('users', 'otp', 'id', 'raw', userid)
-    email = DBcom.UserDB.find('users', 'email', 'id', 'raw', userid)
+    username = DBcom.UserDB.find('users', 'username', 'id','re', 'raw', userid)
+    acl = DBcom.UserDB.find('users', 'acl', 'id', 're','raw', userid)
+    password = DBcom.UserDB.find('users', 'password', 'id', 're','raw', userid)
+    otp = DBcom.UserDB.find('users', 'otp', 'id', 're','raw', userid)
+    email = DBcom.UserDB.find('users', 'email', 'id', 're','raw', userid)
     username = str(base64.b64decode(username[0].split('_')[2]))[2:-1]
     password = str(base64.b64decode(password[0].split('_')[2]))[2:-1]
     otp = str(base64.b64decode(otp[0].split('_')[2]))[2:-1]
@@ -440,7 +445,7 @@ def doAdminUserEditList(userid, localrowid):
 def doAdminListUsers(localrowid, rowid=''):
     userlist = []
     usercount = 1
-    allusers = DBcom.UserDB.find('users', 'username', 'id', 'raw','')
+    allusers = DBcom.UserDB.find('users', 'username', 'id', 're','raw','')
     alluserscnt = len(allusers)
     for user in allusers:
         print("{}. Username: {} / UserID: {}".format(usercount,str(base64.b64decode(user.split('_')[2]))[2:-1],str(user.split('_')[0])))
@@ -465,7 +470,8 @@ def randomizeQuestions(localrowid, username):
         print('Randomizing Questions...')
         print('+==================================+\n')
         #get the list of questions
-        allQns = DBcom.UserDB.find('questions', 'questions', 'id', 'raw','')
+        allQns = DBcom.UserDB.find('questions', 'questions', 'id', 're','raw','')
+        state = True
         #shuffle the list
         print(allQns)
         allQnsnum = len(allQns)
@@ -474,13 +480,20 @@ def randomizeQuestions(localrowid, username):
         #print the list1
         #update the list
         print(localrowid)
+        while state == True:
+            for qn in allQns:
+                qnid = qn.split('_')[0]
+                qn = str(qn.split('_')[2])
+                DBcom.UserDB.update('users', 'questions', 's',qnid, qn)
+            state = False
+        '''
         for qn in allQns:
             rowid = qn.split('_')[0]
             for i in range(0,allQnsnum):
                 if rowid == allQns[i].split('_')[0]:
                     DBcom.UserDB.update('questions', 'questions', 'r',rowid, str(allQns[i].split('_')[2]))
                     break
-
+        '''
         print('+==================================+\n')
         print('Questions randomized successfully!')
         print('+==================================+\n')
@@ -550,15 +563,17 @@ def adminCreateQuestionPool(localrowid, username):
                 print('Error, the correct answer is not in the options...')
                 adminCreateQuestionPool(localrowid, username)
             options = str(options)
-            #print(options)
+            print(options)
+            print(question)
+            print(correctAnswer)
             #print(type(options))
             options = options.replace("'","")
             options = options.replace("[","")
             options = options.replace("]","")
             #print(options)
-            DBcom.UserDB.create('questions','options','r',questionid,options)
-            DBcom.UserDB.create('questions','correctAnswers','r',questionid,correctAnswer)
-            DBcom.UserDB.create('questions', 'questions', 'r', questionid, question)
+            DBcom.UserDB.create('questions','options','q',questionid,options)
+            DBcom.UserDB.create('questions','correctAnswers','q',questionid,correctAnswer)
+            DBcom.UserDB.create('questions', 'questions', 'q', questionid, question)
             print('Question {} created successfully'.format(i))
         print('+==================================+\n')
         print('\n')
@@ -570,13 +585,13 @@ def listQuestionPool(localrowid, username):
     print('Listing Question Pool...')
     print('+==================================+\n')
     #list the question pool
-    allQns = DBcom.UserDB.find('questions', 'questions', 'id', 'raw','')
+    allQns = DBcom.UserDB.find('questions', 'questions', 'id', 're','raw','')
     print(allQns)
     allQnscnt = len(allQns)
     allQnsnum = len(allQns)
     Qnscnt = 1
     for allQnscnt in allQns:
-        print("{}. Question: {}/QuestionID: {}".format(Qnscnt,str((allQnscnt.split('_')[2])),str(allQnscnt.split('_')[0])))
+        print("{}. Question: {}/ID: {}".format(Qnscnt,str((allQnscnt.split('_')[2])),str(allQnscnt.split('_')[0])))
         Qnscnt = Qnscnt + 1
     print('+==================================+\n')
     print('Which question do you want to modify?: ')
@@ -600,11 +615,11 @@ def adminModifyQuestion(localrowid, questionNumber, username):
         adminMenu(localrowid, username)
     else:
         questionNumber = questionNumber - 1
-        question = DBcom.UserDB.find('questions', 'questions', 'id', 'raw', '')
+        question = DBcom.UserDB.find('questions', 'questions', 'id', 're','raw', '')
         question = question[questionNumber]
-        options = DBcom.UserDB.find('questions', 'options', 'id', 'raw', '')
+        options = DBcom.UserDB.find('questions', 'options', 'id', 're','raw', '')
         options = options[questionNumber]
-        correctAnswer = DBcom.UserDB.find('questions', 'correctAnswers', 'id', 'raw', '')
+        correctAnswer = DBcom.UserDB.find('questions', 'correctAnswers', 'id', 're','raw', '')
         correctAnswer = correctAnswer[questionNumber]
         print('Question: {}'.format(question.split('_')[2]))
         print('Options: ')
@@ -687,9 +702,9 @@ def takeQuiz(localrowid, username):
     print('+==================================+\n')
     #list the question pool
     resultList = []
-    allQns = DBcom.UserDB.find('questions', 'questions', 'id', 'raw','')
+    allQns = DBcom.UserDB.find('questions', 'questions', 'id','re', 'raw','')
     #print(allQns)
-    alloptions = DBcom.UserDB.find('questions', 'options', 'id', 'raw','')
+    alloptions = DBcom.UserDB.find('questions', 'options', 'id', 're','raw','')
     allQnscnt = len(allQns)
     allQnsnum = len(allQns)
     allOptnum = len(alloptions)
@@ -719,11 +734,11 @@ def takeQuiz(localrowid, username):
             pass
         question = allQns[Qnscnt]
         
-        print(question)
-        print(allOptnum)
+        #print(question)
+        #print(allOptnum)
         print("QuestionID: {}/{}".format(Qnsid, allQnsnum))
         print("Question:\n{}".format(str(question.split('_')[2])))
-        for i in range(1,5):
+        for i in range(1,allQnsnum+1):
             allOptnum = alloptions[i-1]
             if question.split('_')[0] == allOptnum.split('_')[0]:
                 #print(allOptnum)
@@ -852,10 +867,11 @@ def checkAnswer(localrowid, username, resultList):
     correctNum = 0
     state = True
     totalQn = len(resultList)
-    modelAnsList = DBcom.UserDB.find('questions', 'correctAnswers', 'id', 'raw','')
-    #print(modelAnsList)
+    modelAnsList = DBcom.UserDB.find('questions', 'correctAnswers', 'id', 're','raw','')
+    print(resultList)
+    print(modelAnsList)
     for i in range(len(modelAnsList)):
-        if modelAnsList[i].split('_')[2] == resultList[i]:
+        if modelAnsList[i-1].split('_')[2] == resultList[i-1]:
             print('Question {}. Correct!'.format(i+1))
             correctNum = correctNum + 1
         else:
@@ -867,7 +883,7 @@ def checkAnswer(localrowid, username, resultList):
     print('{}/{} questions correct.'.format(correctNum, totalQn))
     DBcom.UserDB.createQn('users', 'results', 'r', localrowid, percnt)
     #write percnt and username to results.csv
-    open('results.csv', 'a').write('{},{},{}\n'.format(username, percnt, datetime.datetime.now()))
+    open('results.csv', 'a').write('{},{},{}\n'.format(datetime.datetime.now(), username, percnt))
     #ask if user wants to retake quiz
     while state == True:
         print('Do you want to retake the quiz?')

@@ -5,7 +5,6 @@ import hashlib
 import glob
 import shutil
 import re
-from typing import ByteString
 class UserDB():
     def create(tableName, colName, colType, localrowid, data):
         path = ('jsonPython/db/' + tableName + '/' + colName)
@@ -15,7 +14,10 @@ class UserDB():
             data = str(base64.b64encode(data))
         
         #filename = str(localrowid) + '_' + str(colType) + '_' + str(data)[2:-1]
-        filename = str(localrowid) + '_' + str(colType) + '_' + str(data)
+        if colType == 'r':
+            filename = str(localrowid) + '_' + str(colType) + '_' + str(data)[2:-1]
+        if colType == 'q':
+            filename = str(localrowid) + '_' + str(colType) + '_' + str(data)
         #date = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         with open(path+'/'+filename, 'w+') as f:
             #f.write(date+'_'+str(data))
@@ -34,7 +36,7 @@ class UserDB():
             f.write(str(data))
         return localrowid
 
-    def find(tableName, colName, searchPart, returnType, data):
+    def find(tableName, colName, searchPart, searchMethod, returnType, data):
         results = []
 
         if searchPart == 'id':
@@ -57,22 +59,38 @@ class UserDB():
                 #file_data = str(file.split('_')[2])[:-2]
                 file_data = str(file.split('_')[2])
                 file_data = base64.b64decode(file_data + '==')
+                #print(str(data).replace(" ", ""), str(file_data).replace(" ", ""))
+                #print(type(str(data)), type(str(file_data)))
             else:
                 file_data = str(file.split('_')[0])
-            
-            if bool(re.match(data,file_data)):
-                if returnType == 'bool':
-                    #print('bool>', data,'[',file_data,']')
-                    results.append(True)
-                elif returnType == 'arr':
-                    #print('arr>', data,'[',file_data,']')
-                    results.append(str(base64.b64decode(file.split('_')[2]))[2:-1])
-                elif returnType == 'id':
-                    #print('id>', data,'[',file_data,']')
-                    results.append(file.split('_')[0])
-                else:
-                    #print('raw>', data,'[',file_data,']')
-                    results.append(file)
+            if searchMethod == 're':
+                if bool(re.match(str(data).replace(" ", ""),str(file_data).replace(" ", ""))):
+                    if returnType == 'bool':
+                            #print('bool>', data,'[',file_data,']')
+                        results.append(True)
+                    elif returnType == 'arr':
+                            #print('arr>', data,'[',file_data,']')
+                        results.append(str(base64.b64decode(file.split('_')[2]))[2:-1])
+                    elif returnType == 'id':
+                            #print('id>', data,'[',file_data,']')
+                        results.append(file.split('_')[0])
+                    else:
+                            #print('raw>', data,'[',file_data,']')
+                        results.append(file)
+            else:    
+                if str(data) == str(file_data):
+                    if returnType == 'bool':
+                            #print('bool>', data,'[',file_data,']')
+                        results.append(True)
+                    elif returnType == 'arr':
+                            #print('arr>', data,'[',file_data,']')
+                        results.append(str(base64.b64decode(file.split('_')[2]))[2:-1])
+                    elif returnType == 'id':
+                            #print('id>', data,'[',file_data,']')
+                        results.append(file.split('_')[0])
+                    else:
+                            #print('raw>', data,'[',file_data,']')
+                        results.append(file)
         return results
 
     def read(tableName, colName, localrowid):
