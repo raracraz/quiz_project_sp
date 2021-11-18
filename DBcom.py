@@ -28,11 +28,13 @@ class UserDB():
     def createQn(tableName, colName, colType, localrowid, data):
         path = ('jsonPython/db/' + tableName + '/' + colName)
         os.makedirs(path, exist_ok=True)
-        date = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-        date = date.encode('utf-8')
-        date = str(base64.b64encode(date))
-        data = str(date) + '_' + str(data)
-        filename = str(localrowid) + '_' + str(colType) + '_' + str(data)[2:-1]
+        if colType == 's':
+            date = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+            date = date.encode('utf-8')
+            date = str(base64.b64encode(date))
+            data = str(date) + '_' + str(data)
+        else:
+            filename = str(localrowid) + '_' + str(colType) + '_' + str(data)[2:-1]
         with open(path+'/'+filename, 'w+') as f:
             f.write(str(data))
         return localrowid

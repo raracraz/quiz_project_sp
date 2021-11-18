@@ -503,23 +503,36 @@ def doAdminQuestions(rowid, username):
     print('Welcome to the question admin menu')
     print('1. Create new question pool ')
     print('2. List Question Pools to Update/Delete')
-    print('3. Randomize questions')
-    print('4. Select number of questions in Quiz')
+    print('3. Add questions to the existing question pool')
+    print('4. Randomize questions')
+    print('5. Select number of questions in Quiz')
     print('\n<ENTER> to go Back')
     try:
         choice = int(input('Please enter your choice: '))
     except ValueError:
         adminMenu(rowid, username)
     if choice == 1:
-        adminCreateQuestionPool(rowid, username)
+        print('Are you sure? This will delete the current question pool[y/n]')
+        try:
+            choice = input('Please enter your choice: ')
+        except ValueError:
+            doAdminQuestions(rowid, username)
+        if choice == 'y':
+            adminCreateQuestionPool(rowid, username)
+        else:
+            doAdminQuestions(rowid, username)
     elif choice == 2:
         listQuestionPool(rowid, username)
     elif choice == 3:
-        randomizeQuestions(rowid, username)
+        #addQuestions(rowid, username)
+        pass
     elif choice == 4:
+        randomizeQuestions(rowid, username)
+    elif choice == 5:
         adminSelectQuestions(rowid, username)
     else:
         pass
+
 
 def adminSelectQuestions(localrowid, username):
     print('+==================================+\n')
@@ -527,6 +540,7 @@ def adminSelectQuestions(localrowid, username):
     print('+==================================+\n')
     print('How many questions should the Quiz have?')
     print('\n<ENTER> to go Back')
+    localrowid = localrowid[0]
     try:
         choice = int(input('Please enter your choice: '))
         if choice == '':
@@ -535,9 +549,11 @@ def adminSelectQuestions(localrowid, username):
         print('Please enter a valid choice')
         doAdminQuestions(localrowid, username)
     if choice >= 5 and choice <= 10:
-        DBcom.UserDB.createQn('questions', 'NumberOfQ', 's', localrowid, choice)
+        DBcom.UserDB.update('questions', 'NumberOfQ', 'q', localrowid, choice)
+        print('+==================================+\n')
+        print('Number of Questions set successfully!')
+        doUserQuestions(localrowid, username)
     
-
 
 def adminCreateQuestionPool(localrowid, username):
     print('+==================================+\n')
@@ -722,12 +738,17 @@ def takeQuiz(localrowid, username):
     print('+==================================+\n')
     #list the question pool
     resultList = []
+    Qnsno = DBcom.UserDB.find('questions', 'NumberOfQ', 'id', 're','raw','')
+    Qnsno = Qnsno[0].split('_')[2]
     allQns = DBcom.UserDB.find('questions', 'questions', 'id','re', 'raw','')
     #print(allQns)
     alloptions = DBcom.UserDB.find('questions', 'options', 'id', 're','raw','')
-    allQnscnt = len(allQns)
-    allQnsnum = len(allQns)
     allOptnum = len(alloptions)
+    allQnscnt = len(allQns)
+    if int(Qnsno) > int(allQnscnt):
+        print('Error, there are not enough questions in the pool...')
+        print('Please ask the admin to add more questions...')
+        adminMenu(localrowid, username)
     Opt = ['a', 'b', 'c', 'd']
     state = True
     forward = ''
@@ -756,9 +777,9 @@ def takeQuiz(localrowid, username):
         
         #print(question)
         #print(allOptnum)
-        print("QuestionID: {}/{}".format(Qnsid, allQnsnum))
+        print("QuestionID: {}/{}".format(Qnsid, Qnsno))
         print("Question:\n{}".format(str(question.split('_')[2])))
-        for i in range(1,allQnsnum+1):
+        for i in range(1,Qnsno+1):
             allOptnum = alloptions[i-1]
             if question.split('_')[0] == allOptnum.split('_')[0]:
                 #print(allOptnum)
@@ -797,7 +818,7 @@ def takeQuiz(localrowid, username):
         except ValueError:
             print('Invalid input...')
             takeQuiz(localrowid, username)
-        if Qnsid == allQnsnum:
+        if Qnsid == Qnsno:
             print('You have reached the end of the quiz')
             print('[y]es to submit. [p]revious to back.')
             try:
