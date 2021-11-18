@@ -504,6 +504,7 @@ def doAdminQuestions(rowid, username):
     print('1. Create new question pool ')
     print('2. List Question Pools to Update/Delete')
     print('3. Randomize questions')
+    print('4. Select number of questions in Quiz')
     print('\n<ENTER> to go Back')
     try:
         choice = int(input('Please enter your choice: '))
@@ -515,9 +516,28 @@ def doAdminQuestions(rowid, username):
         listQuestionPool(rowid, username)
     elif choice == 3:
         randomizeQuestions(rowid, username)
-        
+    elif choice == 4:
+        adminSelectQuestions(rowid, username)
     else:
         pass
+
+def adminSelectQuestions(localrowid, username):
+    print('+==================================+\n')
+    print('Select Number of Questions...')
+    print('+==================================+\n')
+    print('How many questions should the Quiz have?')
+    print('\n<ENTER> to go Back')
+    try:
+        choice = int(input('Please enter your choice: '))
+        if choice == '':
+            doAdminQuestions(localrowid, username)
+    except ValueError:
+        print('Please enter a valid choice')
+        doAdminQuestions(localrowid, username)
+    if choice >= 5 and choice <= 10:
+        DBcom.UserDB.createQn('questions', 'NumberOfQ', 's', localrowid, choice)
+    
+
 
 def adminCreateQuestionPool(localrowid, username):
     print('+==================================+\n')
