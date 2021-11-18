@@ -7,6 +7,7 @@ import shutil
 import re
 class UserDB():
     def create(tableName, colName, colType, localrowid, data):
+        
         path = ('jsonPython/db/' + tableName + '/' + colName)
         os.makedirs(path, exist_ok=True)
         if colType == 's':
@@ -16,7 +17,7 @@ class UserDB():
         #filename = str(localrowid) + '_' + str(colType) + '_' + str(data)[2:-1]
         if colType == 'r':
             filename = str(localrowid) + '_' + str(colType) + '_' + str(data)[2:-1]
-        if colType == 'q':
+        else:
             filename = str(localrowid) + '_' + str(colType) + '_' + str(data)
         #date = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         with open(path+'/'+filename, 'w+') as f:
@@ -38,7 +39,6 @@ class UserDB():
 
     def find(tableName, colName, searchPart, searchMethod, returnType, data):
         results = []
-
         if searchPart == 'id':
             data = str(data)
         else:
