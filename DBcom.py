@@ -13,12 +13,15 @@ class UserDB():
         if colType == 's':
             data = data.encode('utf-8')
             data = str(base64.b64encode(data))
-        
+            filename = str(localrowid) + '_' + str(colType) + '_' + str(data)[2:-1]
         #filename = str(localrowid) + '_' + str(colType) + '_' + str(data)[2:-1]
         if colType == 'r':
             filename = str(localrowid) + '_' + str(colType) + '_' + str(data)[2:-1]
+            print('create >>>{}'.format(data))
+            '''
         else:
             filename = str(localrowid) + '_' + str(colType) + '_' + str(data)
+            '''
         #date = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         with open(path+'/'+filename, 'w+') as f:
             #f.write(date+'_'+str(data))
@@ -27,12 +30,14 @@ class UserDB():
     
     def createQn(tableName, colName, colType, localrowid, data):
         path = ('jsonPython/db/' + tableName + '/' + colName)
+        filename = ''
         os.makedirs(path, exist_ok=True)
         if colType == 's':
             date = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
             date = date.encode('utf-8')
             date = str(base64.b64encode(date))
             data = str(date) + '_' + str(data)
+            filename = str(localrowid) + '_' + str(colType) + '_' + str(data)[2:-1]
         else:
             filename = str(localrowid) + '_' + str(colType) + '_' + str(data)[2:-1]
         with open(path+'/'+filename, 'w+') as f:
@@ -149,8 +154,7 @@ class UserDB():
             return False
         
     def deleteUser(tableName, colName, localrowid):
-        
       #  print(localrowid)
-        find_result = UserDB.find(tableName, colName, 'id', 'raw', localrowid[0])
+        find_result = UserDB.find(tableName, colName, 'id','q','raw', localrowid)
         path = ('jsonPython/db/' + tableName + '/' + colName + '/' + find_result[0])
         os.remove(path)
