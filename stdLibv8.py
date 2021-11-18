@@ -826,6 +826,8 @@ def takeQuiz(localrowid, username):
                 resultList.pop(Qnscnt-1)
             except IndexError:
                 print('Error, you cannot go back on the first question')
+                Qnscnt = Qnscnt + 1
+                Qnsid = Qnsid + 1
                 pass
         else:
             pass
@@ -851,7 +853,7 @@ def takeQuiz(localrowid, username):
                     print("What is the correct Answer?: ")
                     print('[a,b,c,d]')
                     try:
-                        result = str(input('> '))
+                        result = str(input('> ')).lower()
                         if result not in Opt:
                             print('Answer not in options')
                             print('Answer not saved.')
