@@ -39,7 +39,7 @@ class UserDB():
             data = str(date) + '_' + str(data)
             filename = str(localrowid) + '_' + str(colType) + '_' + str(data)[2:-1]
         else:
-            filename = str(localrowid) + '_' + str(colType) + '_' + str(data)[2:-1]
+            filename = str(localrowid) + '_' + str(colType) + '_' + str(data)
         with open(path+'/'+filename, 'w+') as f:
             f.write(str(data))
         return localrowid
