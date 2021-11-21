@@ -4,6 +4,28 @@ import uuid
 import re
 import hashlib
 import base64
+############################################################################################
+'''
+Functions of this QUIZ APPICATION:
+'''
+# This Quiz is a simple quiz that will ask the user a series of questions after login.
+# The user will be able to register an account
+# The user will be able to login to their account
+# The user will be able to recover their password using the email they registered with
+
+# The user will be able to answer the questions with a single character.
+# The user will be able to quit the quiz at any time.
+# The user will be able to see their score at the end of the quiz.
+# The user's results will be saved to a file and additionally in a csv file.
+
+# The admin will be able to add questions to the quiz.
+# The admin will be able to remove questions from the quiz.
+# The admin will be able to view and change the current list of questions.
+# The admin will be able to randomize the order of the questions.
+# The admin will be able to change the account details of any user.
+
+
+
 global rowid, username, loggedin_rowid
 # function to show the main menu for the quiz app 
 #let the user choose to login, register, forget password and exit
