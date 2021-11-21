@@ -8,6 +8,7 @@ import glob
 import shutil
 import DBcom
 import random
+
 #purpose of stdLibv7 is to make stdLibv7.py more organized
 def menu(localrowid):
     print('\n\n+==================================+')
@@ -102,7 +103,7 @@ def registerUser(rowid,fromwhere, acl = '00000'):
     #if username is empty go back
     if username == '':
         if fromwhere == 'admin':
-            doAdminUser(localrowid)
+            doAdminUser(localrowid, username)
         else:
             menu(localrowid)
 
@@ -148,7 +149,7 @@ def registerUser(rowid,fromwhere, acl = '00000'):
             print('+==================================+\n')
             
             if fromwhere == "admin":
-                doAdminUser(rowid)
+                doAdminUser(rowid, username)
             else:
                 menu(rowid)
         except ValueError:
@@ -272,11 +273,13 @@ def doUserQuestions(localrowid, username):
     print('(You will be logged out)')
     print('+==================================+\n')
     try:
-        userChoice = int(input('> '))
+        userChoice = int(input('Please enter your choice: '))
     except ValueError:
         menu(localrowid)
     if userChoice == 1:
-        takeQuiz(localrowid, username)
+        attCount = DBcom.UserDB.find('questions', 'NumberOfAtt', 'id', 're', 'raw', '')
+        attCount = attCount[0].split('_')[2]
+        takeQuiz(localrowid, username, count = attCount)
     elif userChoice == 2:
         userResults(localrowid, username)
     elif userChoice == 5:
@@ -342,7 +345,7 @@ def adminMenu(localrowid, username):
     except ValueError:
         doUserQuestions(localrowid, username)
     if choice == 1:
-        doAdminUser(localrowid)
+        doAdminUser(localrowid, username)
     elif choice == 2:
         doAdminQuestions(localrowid, username)
     elif choice == 3:
@@ -350,7 +353,7 @@ def adminMenu(localrowid, username):
     else:
         menu(localrowid)
 
-def doAdminUser(localrowid):
+def doAdminUser(localrowid, username):
     print('Welcome to the user setting menu [{}]'.format(localrowid))
     print('1. Create new user')
     print('2. List Users to Update/Delete')
@@ -359,7 +362,7 @@ def doAdminUser(localrowid):
         choice = int(input('Please enter your choice: '))
     except ValueError:
         print('Please enter a valid choice')
-        doUserQuestions(localrowid)
+        doUserQuestions(localrowid, username)
     if choice == 1:
         registerUser(localrowid,"admin")
     elif choice == 2:
@@ -386,7 +389,7 @@ def doAdminUserDelData(userid, localrowid):
     #print(userid)
     print('Are you sure you want to delete this user? [y/n]')
     try:
-        choice = str(input('> '))
+        choice = int(input('Please enter your choice: '))
         if choice == 'y':
             DBcom.UserDB.deleteUser('users', 'username', userid)
             DBcom.UserDB.deleteUser('users', 'password',userid)
@@ -460,11 +463,11 @@ def doAdminListUsers(localrowid, rowid=''):
     try:
         choice = int(input('Please enter your choice [{}-{}]: '.format(1,alluserscnt)))
     except ValueError:
-        doAdminUser(rowid)
+        doAdminUser(localrowid, '')
 
     if choice > alluserscnt:
         print('Please enter a valid choice')
-        doAdminUser(rowid)
+        doAdminUser(localrowid, '')
     else:
         rowid = allusers[choice-1].split('_')[0]
         doAdminUserEditList(rowid, localrowid)
@@ -507,6 +510,7 @@ def randomizeQuestions(localrowid, username):
 
 def doAdminQuestions(rowid, username):
     print('Welcome to the question setting menu')
+    print('+==================================+')
     print('1. Create new question pool ')
     print('2. List Question Pools to Update/Delete')
     print('3. Add questions to the existing question pool')
@@ -514,6 +518,8 @@ def doAdminQuestions(rowid, username):
     print('5. Select number of questions in Quiz')
     print('6. Select number of Quiz attempts')
     print('\n<ENTER> to go Back')
+    print('+==================================+')
+
     try:
         choice = int(input('Please enter your choice: '))
     except ValueError:
@@ -687,10 +693,13 @@ def adminCreateQuestionPool(localrowid, username):
             options = options.replace("[","")
             options = options.replace("]","")
             #print(options)
-            DBcom.UserDB.create('questions','options','q',questionid,options)
-            DBcom.UserDB.create('questions','correctAnswers','q',questionid,correctAnswer)
-            DBcom.UserDB.create('questions', 'questions', 'q', questionid, question)
+            DBcom.UserDB.createQn('questions','options','q',questionid,options)
+            DBcom.UserDB.createQn('questions','correctAnswers','q',questionid,correctAnswer)
+            DBcom.UserDB.createQn('questions', 'questions', 'q', questionid, question)
             print('Question {} created successfully'.format(i))
+        DBcom.UserDB.createQn('questions', 'NumberOfQ', 'q', questionid, '5')
+        DBcom.UserDB.createQn('questions', 'NumberOfAtt', 'q', questionid, '3')
+            
         print('+==================================+\n')
         print('\n')
         print('+==================================+\n')
@@ -724,7 +733,6 @@ def adminModifyQuestion(localrowid, questionNumber, username):
     print('Modifying Question...')
     print('+==================================+\n')
     questionid = ''
-    count = 0
     opt = ['a', 'b', 'c', 'd']
     if questionNumber < 1 or questionNumber > 10:
         print('Invalid number of questions...')
@@ -812,7 +820,7 @@ def adminModifyQuestion(localrowid, questionNumber, username):
 ##############################################################################
 #                               TakeQuiz                                     #
 ##############################################################################
-def takeQuiz(localrowid, username):
+def takeQuiz(localrowid, username, count):
     print('+==================================+\n')
     print('Taking Quiz...')
     print('+==================================+\n')
@@ -824,6 +832,9 @@ def takeQuiz(localrowid, username):
     allQns = DBcom.UserDB.find('questions', 'questions', 'id','re', 'raw','')
     #print(allQns)
     alloptions = DBcom.UserDB.find('questions', 'options', 'id', 're','raw','')
+    attCount = DBcom.UserDB.find('questions', 'NumberOfAtt', 'id', 're', 'raw', '')
+    attCount = attCount[0].split('_')[2]
+    attCount = int(attCount)
     allOptnum = len(alloptions)
     allQnscnt = len(allQns)
     if int(Qnsno) > int(allQnscnt):
@@ -900,7 +911,7 @@ def takeQuiz(localrowid, username):
             forward = str(input('> '))
         except ValueError:
             print('Invalid input...')
-            takeQuiz(localrowid, username)
+            takeQuiz(localrowid, username, count)
         if Qnsid == Qnsno:
             print('You have reached the end of the quiz')
             print('[y]es to submit. [p]revious to back.')
@@ -908,10 +919,11 @@ def takeQuiz(localrowid, username):
                 submit = str(input('> '))
             except ValueError:
                 print('Invalid input...')
-                takeQuiz(localrowid, username)
+                takeQuiz(localrowid, username, count)
             if submit == 'y':
                 state = False
-                checkAnswer(localrowid, username, resultList, Qnsno, allQns)
+                print(attCount)
+                checkAnswer(localrowid, username, resultList, Qnsno, allQns, attCount, count)
             else:
                 Qnscnt = Qnscnt - 1
                 Qnsid = Qnsid - 1
@@ -983,13 +995,16 @@ def takeQuiz(localrowid, username):
     #DBcom.UserDB.createQn('users', 'results', 's', localrowid, resultList)
     print('+==================================+\n')
     '''
-def checkAnswer(localrowid, username, resultList, Qnsno, allQns):
+def checkAnswer(localrowid, username, resultList, Qnsno, allQns, attCount, count):
     print('+==================================+\n')
     print('Checking Answer...')
     print('+==================================+\n')
     localrowid = localrowid[0]
     QnsList = []
-    attCount = 0
+    #count = attCount
+    #print('count>{}'.format(count)) = 3
+    #print('attCount>{}'.format(attCount)) = 3
+    #count = count - 1
     correctNum = 0
     score = 0
     state = True
@@ -1000,6 +1015,9 @@ def checkAnswer(localrowid, username, resultList, Qnsno, allQns):
     print('User: {}'.format(username))
     for i in range(0, Qnsno):
         if modelAnsList[i].split('_')[2] == resultList[i]:
+            print(modelAnsList[i].split('_')[2])
+            print(resultList[i])
+            print(i)
             print('Question {}. Correct!'.format(i+1))
             correctNum = correctNum + 1
             score+=2
@@ -1014,26 +1032,28 @@ def checkAnswer(localrowid, username, resultList, Qnsno, allQns):
     #find the total number of questions
     for i in range(0, Qnsno):
         Qns = allQns[i]
+        #Qns = Qns.split('_')[2]
         QnsList.append(Qns)
-    print(QnsList)
-    open('results.csv', 'a').write('{},{},{},{}\n'.format(username, datetime.datetime.now(), percnt))
+    #print(QnsList)
+    open('results.csv', 'a').write('{},{},{}\n'.format(username,  percnt, datetime.datetime.now()))
     #ask if user wants to retake quiz
     while state == True:
         print('Do you want to retake the quiz?')
-        print('[{}/3] attempts left.'.format(attCount))
+        #print('count> {}'.format(count))
+        count = int(count) - 1 
+        print('[{}/{}] attempts left.'.format(count, attCount))
         print('[y]es or [n]o')
         try:
-            retake = str(input('> '))
+            retake = int(input('Please enter your choice: '))
             if retake == 'y':
-                attCount+=1
-                if attCount == 3:
-                    print('+==================================+')
-                    print('You have reached the maximum number of attempts')
+                if count == 0:
+                    print('You have no more attempts left.')
+                    doUserQuestions(localrowid, username)
                     print('Thank you for taking the quiz.')
                     print('+==================================+')
                     state = False
                     doUserQuestions(localrowid, username)
-                takeQuiz(localrowid, username)
+                takeQuiz(localrowid, username, count)
             else:
                 print('+==================================+')
                 print('Thank you for taking the quiz.')
