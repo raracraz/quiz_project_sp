@@ -12,8 +12,8 @@ import random
 #purpose of stdLibv7 is to make stdLibv7.py more organized
 def menu(localrowid):
     print('\n\n+==================================+')
-    print('Welcome to the The quiz')
-    print('+==================================+')    
+    print(colors.bold, colors.fg.cyan, '    Welcome to the The quiz', colors.reset)
+    print('+==================================+\n')    
     print('1. Login')
     print('2. Register')
     print('3. Forget password')
@@ -72,11 +72,11 @@ def registerUser(rowid,fromwhere, acl = '00000'):
 
     if fromwhere == 'admin':
         print('+==================================+')
-        print('Create User / Admin User Menu')
+        print(colors.fg.cyan, '   Create User / Admin User Menu', colors.reset)
         print('+==================================+')
     else:
         print('+==================================+')
-        print('Create User Menu')
+        print(colors.bold, colors.fg.cyan, '\t  Create User Menu', colors.reset)
         print('+==================================+')        
         print('Requirements:')
         print('1. Username must be between 4 and 20 characters')
@@ -163,7 +163,10 @@ def registerUser(rowid,fromwhere, acl = '00000'):
 #############################################################################
 
 def forgetPassword(localrowid):
-    print('\n<Enter> to back')
+    print('+==================================+')
+    print(colors.bold, colors.fg.cyan, '\t  Forget Password', colors.reset)
+    print('+==================================+')
+    print('\n<ENTER> to back')
     email = str(input('Please enter your email: '))
     
     #check if email is valid
@@ -201,6 +204,9 @@ def forgetPassword(localrowid):
 #############################################################################
 
 def login(localrowid):
+    print('+==================================+')
+    print(colors.bold, colors.fg.cyan, '\t     Login Menu', colors.reset)
+    print('+==================================+')
     results = []
     username = ""
     password = ""
@@ -208,7 +214,7 @@ def login(localrowid):
     password_pass = False
         
     try:
-        print('\n<Enter> to back')
+        print('\n<ENTER> to back')
         username = str(input('Please enter your username: '))
     
         #if there is no username entered.
@@ -235,14 +241,14 @@ def login(localrowid):
         try:
             if len(username_pass) > 0 and len(password_pass) > 0 and localrowid != '':
                 print('+==================================+')
-                print('Login successful {}/{}'.format(username,localrowid))
+                print(colors.fg.green ,'Login successful {}/{}'.format(username,localrowid), colors.reset)
                 print('+==================================+')
                 doUserQuestions(localrowid, username)
             else :
-                print(colors.bg.red, 'a. Incorrect username or password', colors.reset)
+                print(colors.fg.red, 'a. Incorrect username or password', colors.reset)
                 login(localrowid)
         except ValueError:
-            print(colors.bg.red, 'b. Incorrect username or password', colors.reset)
+            print(colors.fg.red, 'b. Incorrect username or password', colors.reset)
             login(localrowid)
 
     except ValueError:
@@ -262,14 +268,14 @@ def doUserQuestions(localrowid, username):
     #print(localrowid)
     #print(userid)
     print('+==================================+\n')
-    print('User Question Menu...')
+    print(colors.fg.cyan, '\tUser Question Menu...', colors.reset)
     print('UserID: {}'.format(username))
     print('+==================================+\n')
     print('1. Take Quiz')
     print('2. User results')
     if aclchecker(localrowid[0], 4) == True:
         print('5. Admin Menu')
-    print('\nPress <Enter> to go back to login page')
+    print('\n<ENTER> to go back to login page')
     print('(You will be logged out)')
     print('+==================================+\n')
     try:
@@ -305,7 +311,7 @@ def doUserQuestions(localrowid, username):
 
 def userResults(localrowid, username):
     print('+==================================+\n')
-    print('User Results Menu...')
+    print(colors.fg.cyan , '\tUser Results Menu...', colors.reset)
     print('UserID: {}'.format(username))
     print('+==================================+\n')
     
@@ -324,7 +330,7 @@ def userResults(localrowid, username):
             userResult = results.split('_')[3]
             print('{}. {} - {}%'.format(i, date, userResult))
             i += 1
-    print('\nPress <Enter> to go back')
+    print('\n<ENTER> to go back')
     print('+==================================+\n')
     try:
         userChoice = int(input('> '))
@@ -336,7 +342,9 @@ def userResults(localrowid, username):
 #############################################################################
 
 def adminMenu(localrowid, username):
-    print('Welcome to the admin menu')
+    print('+==================================+\n')
+    print(colors.fg.cyan, '    Welcome to the admin menu', colors.reset)
+    print('+==================================+\n')
     print('1. Users')
     print('2. Questions')
     print('\n<ENTER> to go Back')
@@ -354,7 +362,9 @@ def adminMenu(localrowid, username):
         menu(localrowid)
 
 def doAdminUser(localrowid, username):
-    print('Welcome to the user setting menu [{}]'.format(localrowid))
+    print('+==================================+\n')
+    print(colors.fg.cyan, ' Welcome to the user setting menu', colors.reset)
+    print('+==================================+\n')
     print('1. Create new user')
     print('2. List Users to Update/Delete')
     print('\n<ENTER> to go Back')
@@ -450,6 +460,9 @@ def doAdminUserEditList(userid, localrowid):
         doAdminListUsers(localrowid, userid)
 
 def doAdminListUsers(localrowid, rowid=''):
+    print('+==================================+\n')
+    print(colors.fg.cyan, '\t   List of Users', colors.reset)
+    print('+==================================+\n')
     userlist = []
     usercount = 1
     allusers = DBcom.UserDB.find('users', 'username', 'id', 're','raw','')
@@ -474,7 +487,7 @@ def doAdminListUsers(localrowid, rowid=''):
 
 def randomizeQuestions(localrowid, username):
         print('+==================================+\n')
-        print('Randomizing Questions...')
+        print(colors.fg.cyan, '\tRandomizing Questions...', colors.reset)
         print('+==================================+\n')
         #get the list of questions
         allQns = DBcom.UserDB.find('questions', 'questions', 'id', 're','raw','')
@@ -509,8 +522,9 @@ def randomizeQuestions(localrowid, username):
         adminMenu(localrowid, username)
 
 def doAdminQuestions(rowid, username):
-    print('Welcome to the question setting menu')
-    print('+==================================+')
+    print('+==================================+\n')
+    print(colors.fg.cyan, 'Welcome to the question setting menu', colors.reset)
+    print('+==================================+\n')
     print('1. Create new question pool ')
     print('2. List Question Pools to Update/Delete')
     print('3. Add questions to the existing question pool')
@@ -566,9 +580,12 @@ def adminSelectAttempts(localrowid, username):
         doUserQuestions(localrowid, username)
 
 def addQuestions(localrowid, username):
+    print('+==================================+\n')
+    print(colors.fg.cyan, '\tAdd Questions', colors.reset)
+    print('+==================================+\n')
     print('How many questions do you want to add?')
     print('(max 10)')
-    print('\n<Enter> to go back')
+    print('\n<ENTER> to go back')
     try:
         questionCount = int(input('> '))
     except ValueError:
@@ -620,11 +637,12 @@ def addQuestions(localrowid, username):
 
 def adminSelectQuestions(localrowid, username):
     print('+==================================+\n')
-    print('Select Number of Questions...')
+    print(colors.fg.cyan, '\tSelect Number of Questions', colors.reset)
     print('+==================================+\n')
     print('How many questions should the Quiz have?')
     print('\n<ENTER> to go Back')
-    current = DBcom.UserDB.find('questions', 'NumberOfQ', 'id', 're', 'raw', localrowid[0])
+    QnsList = []
+    current = DBcom.UserDB.find('questions', 'NumberOfQ', 'id', 're', 'raw', '')
     current = current[0].split('_')[2]
     print('Current number of questions: {}'.format(current))
     try:
@@ -636,6 +654,12 @@ def adminSelectQuestions(localrowid, username):
         doAdminQuestions(localrowid, username)
     if choice >= 5 and choice <= 10:
         DBcom.UserDB.update('questions', 'NumberOfQ', 'q', localrowid[0], choice)
+        for i in range(1,choice+1):
+            QnsList.append('Question-{}'.format(i))
+            QnsList.append('User Answer')
+            QnsList.append('Model Answer')
+        #write a new header into results.csv
+        open('results.csv', 'a').write('\n{},{},{},{}'.format('User',str(str(QnsList).split(',')).replace('"','').replace("'", '').replace('[', '').replace(']', '')),'Score(percent)','Date')
         print('+==================================+\n')
         print('Number of Questions set successfully!')
         doUserQuestions(localrowid, username)
@@ -643,7 +667,7 @@ def adminSelectQuestions(localrowid, username):
 
 def adminCreateQuestionPool(localrowid, username):
     print('+==================================+\n')
-    print('Creating Question Pool...')
+    print(colors.fg.cyan, '\tCreate Question Pool', colors.reset)
     print('+==================================+\n')
     #create the question pool
     #delete current questions
@@ -651,7 +675,7 @@ def adminCreateQuestionPool(localrowid, username):
     DBcom.UserDB.delete('questions')
     print('How many questions do you want to have in the quiz?')
     print('(max 10)')
-    print('\n<Enter> to go back')
+    print('\n<ENTER> to go back')
     
     try:
         questionCount = int(input('> '))
@@ -707,7 +731,7 @@ def adminCreateQuestionPool(localrowid, username):
     
 def listQuestionPool(localrowid, username):
     print('+==================================+\n')
-    print('Listing Question Pool...')
+    print(colors.fg.cyan, '\tList Question Pool', colors.reset)
     print('+==================================+\n')
     #list the question pool
     allQns = DBcom.UserDB.find('questions', 'questions', 'id', 're','raw','')
@@ -721,7 +745,7 @@ def listQuestionPool(localrowid, username):
     print('+==================================+\n')
     print('Which question do you want to modify?: ')
     
-    print('\n<Enter> to go back\n')
+    print('\n<ENTER> to go back\n')
     try:
         questionNumber = int(input('Please enter from [{}-{}]: '.format(1,allQnsnum)))
         adminModifyQuestion(localrowid, questionNumber, username)
@@ -730,7 +754,7 @@ def listQuestionPool(localrowid, username):
 
 def adminModifyQuestion(localrowid, questionNumber, username):
     print('+==================================+\n')
-    print('Modifying Question...')
+    print(colors.fg.cyan, '\tModify Question', colors.reset)
     print('+==================================+\n')
     questionid = ''
     opt = ['a', 'b', 'c', 'd']
@@ -755,7 +779,7 @@ def adminModifyQuestion(localrowid, questionNumber, username):
         print('1. Question')
         print('2. Options')
         print('3. Correct Answer')
-        print('\n<Enter> to go back')
+        print('\n<ENTER> to go back')
         print('+==================================+\n')
         try:
             modifyChoice = int(input('> '))
@@ -798,7 +822,7 @@ def adminModifyQuestion(localrowid, questionNumber, username):
             print('What is the new correct answer?')
             questionid = question.split('_')[0]
             try:
-                print('\n<Enter> to go back')
+                print('\n<ENTER> to go back')
                 newCorrectAnswer = input('What is the correct answer?: ')
             except ValueError:
                 adminModifyQuestion(localrowid, questionNumber, username)
@@ -822,7 +846,7 @@ def adminModifyQuestion(localrowid, questionNumber, username):
 ##############################################################################
 def takeQuiz(localrowid, username, count):
     print('+==================================+\n')
-    print('Taking Quiz...')
+    print(colors.fg.cyan, '\tTake Quiz', colors.reset)
     print('+==================================+\n')
     #list the question pool
     resultList = []
@@ -865,6 +889,9 @@ def takeQuiz(localrowid, username, count):
                 Qnscnt = Qnscnt + 1
                 Qnsid = Qnsid + 1
                 pass
+        elif forward == 'e':
+            print('Exiting Quiz...')
+            doUserQuestions(localrowid, username)
         else:
             pass
         question = allQns[Qnscnt]
@@ -906,9 +933,9 @@ def takeQuiz(localrowid, username, count):
         
         print(resultList)
         print('+==================================+')
-        print('[n]ext to continue, [p]revious to back.[n/p]')
+        print('[n]ext, [p]revious, [e]xit.[n/p/e]')
         try:
-            forward = str(input('> '))
+            forward = str(input('> ')).lower()
         except ValueError:
             print('Invalid input...')
             takeQuiz(localrowid, username, count)
@@ -1050,7 +1077,7 @@ def checkAnswer(localrowid, username, resultList, Qnsno, allQns, attCount, count
     QnsList = str(QnsList).replace('[', '').replace(']', '').replace("'", '')
     #AnsList = str(AnsList).replace('[', '').replace(']', '').replace("'", '')
     #ModelList = str(ModelList).replace('[', '').replace(']', '').replace("'", '')
-    open('results.csv', 'a').write('{},{},{},{}\n'.format(username, str(QnsList.split(',')).replace('[', '').replace(']', '').replace("'", '').replace(' ', ''), percnt+'%', datetime.datetime.now()))
+    open('results.csv', 'a').write('\n{},{},{},{}'.format(username, str(QnsList.split(',')).replace('[', '').replace(']', '').replace("'", '').replace(' ', ''), str(percnt)+'%', datetime.datetime.now()))
     #ask if user wants to retake quiz
     while state == True:
         print('Do you want to retake the quiz?')
