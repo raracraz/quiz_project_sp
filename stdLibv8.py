@@ -893,7 +893,7 @@ def takeQuiz(localrowid, username, count):
                         if result not in Opt:
                             print('Answer not in options')
                             print('Answer not saved.')
-                            result = ''
+                            
                         else:
                             resultList.append(result)
                     except result == '':
@@ -912,8 +912,14 @@ def takeQuiz(localrowid, username, count):
         except ValueError:
             print('Invalid input...')
             takeQuiz(localrowid, username, count)
+        
         if Qnsid == Qnsno:
             print('You have reached the end of the quiz')
+            print('+==================================+')
+            print('Summary page:')
+            for i in range(0, len(resultList)):
+                print('Question: {}\nAnswer:{}'.format(allQns[i].split('_')[2], resultList[i]))
+            print('+==================================+')
             print('[y]es to submit. [p]revious to back.')
             try:
                 submit = str(input('> '))
@@ -1001,6 +1007,8 @@ def checkAnswer(localrowid, username, resultList, Qnsno, allQns, attCount, count
     print('+==================================+\n')
     localrowid = localrowid[0]
     QnsList = []
+    #AnsList = []
+    #ModelList = []
     #count = attCount
     #print('count>{}'.format(count)) = 3
     #print('attCount>{}'.format(attCount)) = 3
@@ -1010,14 +1018,14 @@ def checkAnswer(localrowid, username, resultList, Qnsno, allQns, attCount, count
     state = True
     Tscore = Qnsno*2
     modelAnsList = DBcom.UserDB.find('questions', 'correctAnswers', 'id', 're','raw','')
-    print(resultList)
-    print(modelAnsList)
+    #print(resultList)
+    #print(modelAnsList)
     print('User: {}'.format(username))
     for i in range(0, Qnsno):
         if modelAnsList[i].split('_')[2] == resultList[i]:
-            print(modelAnsList[i].split('_')[2])
-            print(resultList[i])
-            print(i)
+            #print(modelAnsList[i].split('_')[2])
+            #print(resultList[i])
+            #print(i)
             print('Question {}. Correct!'.format(i+1))
             correctNum = correctNum + 1
             score+=2
@@ -1032,10 +1040,17 @@ def checkAnswer(localrowid, username, resultList, Qnsno, allQns, attCount, count
     #find the total number of questions
     for i in range(0, Qnsno):
         Qns = allQns[i]
+        Ans = resultList[i]
+        Model = modelAnsList[i]
         #Qns = Qns.split('_')[2]
-        QnsList.append(Qns)
-    #print(QnsList)
-    open('results.csv', 'a').write('{},{},{}\n'.format(username,  percnt, datetime.datetime.now()))
+        QnsList.append(Qns.split('_')[2])
+        QnsList.append(Ans)
+        QnsList.append(Model.split('_')[2])
+
+    QnsList = str(QnsList).replace('[', '').replace(']', '').replace("'", '')
+    #AnsList = str(AnsList).replace('[', '').replace(']', '').replace("'", '')
+    #ModelList = str(ModelList).replace('[', '').replace(']', '').replace("'", '')
+    open('results.csv', 'a').write('{},{},{},{}\n'.format(username, str(QnsList.split(',')).replace('[', '').replace(']', '').replace("'", '').replace(' ', ''), percnt+'%', datetime.datetime.now()))
     #ask if user wants to retake quiz
     while state == True:
         print('Do you want to retake the quiz?')
@@ -1047,7 +1062,7 @@ def checkAnswer(localrowid, username, resultList, Qnsno, allQns, attCount, count
             retake = int(input('Please enter your choice: '))
             if retake == 'y':
                 if count == 0:
-                    print('You have no more attempts left.')
+                    print(colors.bg.red, 'You have no more attempts left.', colors.reset)
                     doUserQuestions(localrowid, username)
                     print('Thank you for taking the quiz.')
                     print('+==================================+')
