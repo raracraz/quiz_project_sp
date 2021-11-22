@@ -560,7 +560,7 @@ def doAdminQuestions(rowid, username):
     elif choice == 6:
         adminSelectAttempts(rowid, username)
     else:
-        pass
+        adminMenu(rowid, username)
 
 def adminSelectAttempts(localrowid, username):
     current = DBcom.UserDB.find('questions', 'NumberOfAtt', 'id', 're', 'raw', localrowid[0])
@@ -917,21 +917,21 @@ def takeQuiz(localrowid, username, count):
                     print('[a,b,c,d]')
                     try:
                         result = str(input('> ')).lower()
-                        if result not in Opt:
+                        if result not in Opt or result == len(0):
                             print('Answer not in options')
                             print('Answer not saved.')
-                            
+                            break
                         else:
                             resultList.append(result)
                     except result == '':
                         print('Error, please enter a valid answer')
-                        pass
+                        break
                     except ValueError:
                         print('Error, please enter a valid answer')
-                        pass
+                        break
         
         
-        print(resultList)
+        print(len(resultList))
         print('+==================================+')
         print('[n]ext, [p]revious, [e]xit.[n/p/e]')
         try:
@@ -962,6 +962,7 @@ def takeQuiz(localrowid, username, count):
                 Qnsid = Qnsid - 1
                 resultList.pop(Qnscnt)
                 resultList.pop(Qnscnt-1)
+
 
     '''
     for i in allQns:
