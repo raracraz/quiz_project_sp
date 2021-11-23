@@ -123,11 +123,10 @@ class UserDB():
                             f.write(str(data))
                         return data   
                 else:
-                    if file.split('_')[0] == str(localrowid):
-                        os.remove(path +'/'+ file)
-                        with open(path +'/'+ str(localrowid) + '_' + colType + '_' + str(data), 'w+') as f:
-                            f.write(str(data))
-                        return data  
+                    os.remove(path +'/'+ file)
+                    with open(path +'/'+ str(localrowid) + '_' + colType + '_' + str(data), 'w+') as f:
+                        f.write(str(data))
+                    return data  
     
     def BAKupdate(tableName, colName, colType, rowid, data, colType2, rowid2, data2, userinput):
         path = ('jsonPython/db/' + tableName + '/' + colName)

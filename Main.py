@@ -24,8 +24,6 @@ Functions of this QUIZ APPICATION:
 # The admin will be able to randomize the order of the questions.
 # The admin will be able to change the account details of any user.
 
-
-
 global rowid, username, loggedin_rowid
 # function to show the main menu for the quiz app 
 #let the user choose to login, register, forget password and exit
