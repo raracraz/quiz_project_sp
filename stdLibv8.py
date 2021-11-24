@@ -8,13 +8,21 @@ import glob
 import shutil
 import DBcom
 import random
-
+import time
 #purpose of stdLibv8 is to make stdLibv7.py more organized
 #this is the main menu
 #purpose of this menu is to provide the user with a menu to choose from
 def menu(localrowid):
     print('\n\n+==================================+')
-    print(colors.bold, colors.fg.cyan, '    Welcome to the The quiz', colors.reset)
+    print(colors.bold, colors.fg.cyan, '      Welcome to the Quiz', colors.reset)
+    print(' ________  ___  ___  ___  ________')     
+    print('| \  __  \|\  \|\  \|\  \ |\_____  \ ')    
+    print(' \ \ \ |\ \ \  \\ \\  \ \  \ \|___/  /|')   
+    print('  \ \ \ \\\ \ \  \\ \\  \ \  \    /  / /   ')
+    print('   \ \ \_\\\ \ \  \\_\\  \ \  \  /  /_/__')  
+    print('    \ \_____ \ \_______\ \__\ \________\ ')
+    print('     \|___|\__\|_______|\|__| \|_______|')
+    print('          \|__|')
     print('+==================================+\n')    
     print('1. Login')
     print('2. Register')
@@ -89,18 +97,25 @@ def registerUser(rowid,fromwhere, acl = '00000'):
         print(colors.bold, colors.fg.cyan, '\t  Create User Menu', colors.reset)
         print('+==================================+')        
         print('Requirements:')
-        print('1. Username/Password must be between 4 and 20 characters')
-        print('2. Username/Password must contain at least one special character [@#$%^&+=]')
-        print('3. Username/Password must contain at least one upper and lower case letter')
-        print('4. Username/Password must contain at least one number [0-9]')
+        print('1. Username must not contain special characters')
+        print('2. Username must be [4-20] characters')
+        print('3. Password must be [4-20] characters')
+        print('4. Password must contain at least one special character [@#$%^&+=]')
+        print('5. Password must contain at least one upper and lower case letter')
+        print('6. Password must contain at least one number [0-9]')
         print('<b> to back')
         print('+==================================+')
-    reg = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!#%*?&]{4,20}$"
-    pat = re.compile(reg)
+    #Username Requirements
+    regUser = "^[a-zA-Z0-9]{4,20}$"
+    patUser = re.compile(regUser)
+    #Password Requirements
+    regPass = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!#%*?&]{4,20}$"
+    patPass = re.compile(regPass)
+    #Check if username is valid
     username = str(input('Please enter your username: '))
     if username == 'b':
         menu(localrowid)
-    mat = re.search(pat, username)
+    mat = re.search(patUser, username)
     if mat:
         pass
     else:
@@ -112,9 +127,9 @@ def registerUser(rowid,fromwhere, acl = '00000'):
             doAdminUser(localrowid, username)
         else:
             menu(localrowid)
-
+    #check if password is valid
     password = str(input('Please enter your password: '))
-    mat = re.search(pat, password)
+    mat = re.search(patPass, password)
     if mat:
         pass
     else:
@@ -123,20 +138,20 @@ def registerUser(rowid,fromwhere, acl = '00000'):
     email = str(input('Please enter your email: '))
     otp = str(generateOTP())
 
-    #first let's check if username is already taken
+    #check if username is already taken
     if len(DBcom.UserDB.find('users', 'username', 'data','' , 'bool', username)) > 0:
         print('Username already taken')
     else:
         username_pass = True
 
-    #now let's check if email is a valid email
+    #check if email is a valid email
     if re.match(r"[^@]+@[^@]+\.[^@]+", email) == None:
         print('Email is not valid')
         email_pass = False
     else:
         email_pass = True
 
-    #now let's check if email is already taken
+    #check if email is already taken
     if len(DBcom.UserDB.find('users', 'email', 'data','' ,'bool', email)) > 0:
         print('Email already taken')
         email_pass = False
@@ -329,7 +344,6 @@ def userResults(localrowid, username):
     print(colors.fg.cyan , '\tUser Results Menu...', colors.reset)
     print('UserID: {}'.format(username))
     print('+==================================+\n')
-    
     '''
     try:
         userChoice = int(input('> '))
@@ -337,7 +351,8 @@ def userResults(localrowid, username):
         doUserQuestions(localrowid, username)
     '''
     i = 1
-    userList = DBcom.UserDB.find('users', 'results', 'id','re',  'raw', localrowid)
+    usercnt = 0
+    userList = DBcom.UserDB.find('users', 'results', 'id','re','raw', localrowid)
     for results in userList:
         if localrowid[0] == results.split('_')[0]:
             date = results.split('_')[2]
@@ -345,6 +360,10 @@ def userResults(localrowid, username):
             userResult = results.split('_')[3]
             print('{}. {} - {}%'.format(i, date, userResult))
             i += 1
+            usercnt = 1
+        if usercnt == 0:
+            print('There are no results for this user...\n')
+            doUserQuestions(localrowid, username)
     print('\n<ENTER> to go back')
     print('+==================================+\n')
     try:
@@ -546,7 +565,6 @@ def doAdminQuestions(rowid, username):
     print('4. Randomize questions')
     print('5. Select number of questions in Quiz')
     print('6. Select number of Quiz attempts')
-    print('7. Select allocated time per quiz')
     print('\n<ENTER> to go Back')
     print('+==================================+\n')
 
@@ -575,11 +593,9 @@ def doAdminQuestions(rowid, username):
         adminSelectQuestions(rowid, username)
     elif choice == 6:
         adminSelectAttempts(rowid, username)
-    elif choice == 7:
-        adminSelectTime(rowid, username)
     else:
         adminMenu(rowid, username)
-
+'''
 def adminSelectTime(localrowid, username):
     print('+==================================+\n')
     print(colors.fg.cyan, '   Select allocated time per quiz', colors.reset)
@@ -592,20 +608,19 @@ def adminSelectTime(localrowid, username):
     current = current[0].split('_')[2]
     print('Current allocated Time: {} minutes'.format(current))
     try:
+        # round choice to nearest minute
         choice = int(input('\nPlease enter your choice: '))
-        if choice > 10:
-            print('Please enter a valid choice')
-            adminSelectTime(localrowid, username)
-        elif choice < 1:
-            print('Please enter a valid choice')
-            adminSelectTime(localrowid, username)
-        else:
+        if choice >= 1 or choice <= 10:
             print('Time successfully changed')
             DBcom.UserDB.update('questions', 'AlotTime', 'q', localrowid[0], choice)
+            doAdminQuestions(localrowid, username)
+        else:
+            print('Please enter a valid value')
+            adminSelectTime(localrowid, username)
     except ValueError:
         print('Please enter a valid value')
         doAdminQuestions(localrowid, username)
-
+'''
 def adminSelectAttempts(localrowid, username):
     current = DBcom.UserDB.find('questions', 'NumberOfAtt', 'id', 're', 'raw', localrowid[0])
     current = current[0].split('_')[2]
@@ -703,8 +718,9 @@ def adminSelectQuestions(localrowid, username):
             QnsList.append('Question-{}'.format(i))
             QnsList.append('User Answer')
             QnsList.append('Model Answer')
+        QnsList.append('Elapsed Time')
         QnsList.append('Score')
-        QnsList.append('Date')  
+        QnsList.append('Date') 
         #write a new header into results.csv
         #print(QnsList)
         open('results.csv', 'a').write('\n{},{}'.format('User',str(str(QnsList).split(',')).replace('"','').replace("'", '').replace('[', '').replace(']', '').replace(' ', '')))
@@ -890,7 +906,7 @@ def adminModifyQuestion(localrowid, questionNumber, username):
 ##############################################################################
 def takeQuiz(localrowid, username, count):
     print('+==================================+\n')
-    print(colors.fg.cyan, '\tTake Quiz', colors.reset)
+    print(colors.fg.cyan, '\t     Take Quiz', colors.reset)
     print('+==================================+\n')
     #list the question pool
     resultList = []
@@ -903,6 +919,9 @@ def takeQuiz(localrowid, username, count):
     attCount = DBcom.UserDB.find('questions', 'NumberOfAtt', 'id', 're', 'raw', '')
     attCount = attCount[0].split('_')[2]
     attCount = int(attCount)
+    alotTime = DBcom.UserDB.find('questions', 'AlotTime', 'id', 're', 'raw', '')
+    alotTime = alotTime[0].split('_')[2]
+    alotTime = int(alotTime)*60
     allOptnum = len(alloptions)
     allQnscnt = len(allQns)
     if int(Qnsno) > int(allQnscnt):
@@ -918,6 +937,7 @@ def takeQuiz(localrowid, username, count):
     #print(allQns)
     #print(alloptions)
     #print(username)
+    currentTime = time.time()
     while state == True:
         if forward == 'n':
             Qnscnt = Qnscnt + 1
@@ -937,13 +957,16 @@ def takeQuiz(localrowid, username, count):
             doUserQuestions(localrowid, username)
         else:
             pass
-        question = allQns[Qnscnt]
-        
+        try:
+            question = allQns[Qnscnt]
+        except IndexError:
+            pass
         #print(question)
         #print(allOptnum)
         print("QuestionID: {}/{}".format(Qnsid, Qnsno))
         print("Question:\n{}".format(str(question.split('_')[2])))
-        for i in range(0, Qnsno+1):
+        for i in range(0, Qnsno):
+            print(i)
             allOptnum = alloptions[i]
             if question.split('_')[0] == allOptnum.split('_')[0]:
                 #print(allOptnum)
@@ -978,96 +1001,33 @@ def takeQuiz(localrowid, username, count):
                     except ValueError:
                         print('Error, please enter a valid answer')
                         break
-        if Qnsid == Qnsno:
-            print('You have reached the end of the quiz')
-            print('+==================================+')
-            print('Summary page:')
-            for i in range(0, len(resultList)):
-                print('Question: {}\nAnswer:{}'.format(allQns[i].split('_')[2], resultList[i]))
-            print('+==================================+')
-            print('[y]es to submit. [p]revious to back.')
-            try:
-                submit = str(input('> '))
-            except ValueError:
-                print('Invalid input...')
-                takeQuiz(localrowid, username, count)
-            if submit == 'y':
-                state = False
-                print(attCount)
-                checkAnswer(localrowid, username, resultList, Qnsno, allQns, attCount, count)
-            else:
-                Qnscnt = Qnscnt - 1
-                Qnsid = Qnsid - 1
-                resultList.pop(Qnscnt)
-                resultList.pop(Qnscnt-1)
-
-
-    '''
-    for i in allQns:
-        if forward == '':
-            question = i
-        elif forward == 'n':
-            print(question)
-            question = allQns[Qnscnt+1]
-            print(question)
-            Qnsid+=1
-        elif forward == 'p':
-            print(question)
-            question = allQns[Qnscnt-3]
-            print(question)
-            Qnsid-=1
-    '''
-    '''
-    for i in allQns:
-        question = i
-        print(Qnscnt)
-        print(allQns)
-        print(allQnscnt)
-        print("QuestionID: {}/{}".format(Qnsid, allQnsnum))
-        print("Question: {}".format(str(question.split('_')[2])))
-        for allOptnum in alloptions:
-            if question.split('_')[0] == allOptnum.split('_')[0]:
-            #print(allOptnum)
-                allOptnum = allOptnum.split('_')[2]
-                allOptnum = allOptnum.split(',')
-                print("Options: {}".format(str(allOptnum[0])))
-                print("        {}".format(str(allOptnum[1])))
-                print("        {}".format(str(allOptnum[2])))
-                print("        {}".format(str(allOptnum[3])))
+            if Qnsid == Qnsno+1:
+                print('You have reached the end of the quiz')
                 print('+==================================+')
-                print("What is the correct Answer?: ")
-                result = str(input('> '))
-                resultList.append(result)
-                #ask the user if they want to go next or previous question
+                print('Summary page:')
+                for i in range(0, len(resultList)):
+                    try:
+                        print('Question: {}\nAnswer:{}'.format(allQns[i].split('_')[2], resultList[i]))
+                    except IndexError:
+                        pass
                 print('+==================================+')
-                print('[n]ext to continue, [p]revious to back.[n/p]')
+                print('[y]es to submit. [p]revious to back.')
                 try:
-                    forward = str(input('> '))
+                    submit = str(input('> '))
                 except ValueError:
                     print('Invalid input...')
-                    takeQuiz(localrowid, username)
-        #print(allQnscnt)
-        #print(resultList)
-    try:
-        print('+==================================+')
-        print('Do you want to submit the quiz?')
-        print('[y]es or [n]o')
-        submit = str(input('> '))
-        if submit == 'y':
-            print('+==================================+')
-            checkAnswer(localrowid, username, resultList)
-        elif submit == 'n':
-            takeQuiz(localrowid, username)
-        else:
-            print('Invalid input...')
-            takeQuiz(localrowid, username)
-    except ValueError:
-        print('Invalid input...')
-        takeQuiz(localrowid, username)
-    #DBcom.UserDB.createQn('users', 'results', 's', localrowid, resultList)
-    print('+==================================+\n')
-    '''
-def checkAnswer(localrowid, username, resultList, Qnsno, allQns, attCount, count):
+                    takeQuiz(localrowid, username, count)
+                if submit == 'y':
+                    state = False
+                    print(attCount)
+                    checkAnswer(localrowid, username, resultList, Qnsno, allQns, attCount, count, currentTime)
+                else:
+                    Qnscnt = Qnscnt - 1
+                    Qnsid = Qnsid - 1
+                    resultList.pop(Qnscnt)
+                    resultList.pop(Qnscnt-1)
+
+def checkAnswer(localrowid, username, resultList, Qnsno, allQns, attCount, count, currentTime):
     print('+==================================+\n')
     print(colors.fg.cyan, '\tChecking Answer...', colors.reset)
     print('+==================================+\n')
@@ -1084,6 +1044,8 @@ def checkAnswer(localrowid, username, resultList, Qnsno, allQns, attCount, count
     state = True
     Tscore = Qnsno*2
     modelAnsList = DBcom.UserDB.find('questions', 'correctAnswers', 'id', 're','raw','')
+    elapsedTime = time.time() - currentTime
+    elapsedTime = round(elapsedTime, 2)
     #print(resultList)
     #print(modelAnsList)
     print('User: {}'.format(username))
@@ -1101,9 +1063,13 @@ def checkAnswer(localrowid, username, resultList, Qnsno, allQns, attCount, count
     percnt = round(percnt, 2)
     print('Final score: {}/{} - {}%'.format(score, Tscore, percnt))
     print('{}/{} questions correct.'.format(correctNum, Qnsno))
+    print('Elapsed Time: {} seconds'.format(int(elapsedTime)))
     DBcom.UserDB.createQn('users', 'results', 's', localrowid, percnt)
     #write percnt and username to results.csv
     #find the total number of questions
+    #find the number of questions answered correctly
+    #write the percentage to the user's results.csv
+    #write the time taken to the user's results.csv
     for i in range(0, Qnsno):
         Qns = allQns[i]
         Ans = resultList[i]
@@ -1112,6 +1078,7 @@ def checkAnswer(localrowid, username, resultList, Qnsno, allQns, attCount, count
         QnsList.append(Qns.split('_')[2])
         QnsList.append(Ans)
         QnsList.append(Model.split('_')[2])
+    QnsList.append(str(elapsedTime)+' seconds')
 
     QnsList = str(QnsList).replace('[', '').replace(']', '').replace("'", '')
     #AnsList = str(AnsList).replace('[', '').replace(']', '').replace("'", '')
