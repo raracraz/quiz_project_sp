@@ -7,7 +7,6 @@ import shutil
 import re
 class UserDB():
     def create(tableName, colName, colType, localrowid, data):
-        
         path = ('jsonPython/db/' + tableName + '/' + colName)
         os.makedirs(path, exist_ok=True)
         if colType == 's':
@@ -142,8 +141,8 @@ class UserDB():
                     print('Error, could not update file...')
                     return False
 
-    def delete(tableName):
-        path = ('jsonPython/db/' + tableName )
+    def delete(tableName, colName):
+        path = ('jsonPython/db/' + tableName + '/' + colName) 
         if os.path.exists(path):
             shutil.rmtree(path)
             print('Deleted\t' + path + '\tsuccessfully')
