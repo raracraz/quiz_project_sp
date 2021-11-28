@@ -15,7 +15,7 @@ import time
 def menu(localrowid):
     print('\n\n+==================================+')
     print(colors.bold, colors.fg.cyan, '      Welcome to the Quiz', colors.reset)
-    print(' ________  ___  ___  ___  ________')     
+    print(' ________  ___  ___  ___   ________')     
     print('| \  __  \|\  \|\  \|\  \ |\_____  \ ')    
     print(' \ \ \ |\ \ \  \\ \\  \ \  \ \|___/  /|')   
     print('  \ \ \ \\\ \ \  \\ \\  \ \  \    /  / /   ')
@@ -996,7 +996,7 @@ def takeQuiz(localrowid, username, count):
     if int(Qnsno) > int(allQnscnt):
         print('Error, there are not enough questions in the pool...')
         print('Please ask the admin to add more questions...')
-        adminMenu(localrowid, username)
+        doUserQuestions(localrowid, username)
     Opt = ['a', 'b', 'c', 'd']
     state = True
     forward = ''
@@ -1069,7 +1069,7 @@ def takeQuiz(localrowid, username, count):
                     except ValueError:
                         print('Error, please enter a valid answer')
                         break
-            if Qnsid == Qnsno+1:
+            if Qnsid == Qnsno:
                 print('You have reached the end of the quiz')
                 print('+==================================+')
                 print('Summary page:')
@@ -1179,8 +1179,6 @@ def checkAnswer(localrowid, username, resultList, Qnsno, allQns, attCount, count
         except ValueError:
             print('Invalid input...')
             doUserQuestions(localrowid, username)
-
-        print('+==================================+\n')
 
 
 
